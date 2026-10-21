@@ -95,6 +95,8 @@ import { getCodeImg, getTenantList } from "@/api/login";
 import config from "@/config.js";
 import modal from "@/plugins/modal";
 import store from "@/store";
+import { getCurrentParkScope } from "@/api/system/park";
+import { setCurrentPark } from "@/utils/parkContext";
 
 const codeUrl = ref("");
 const captchaEnabled = ref(true);
@@ -161,8 +163,16 @@ async function pwdLogin() {
     });
 }
 
-function loginSuccess() {
+async function loginSuccess() {
   uni.setStorageSync("TenantId", loginForm.value.tenantId);
+  try {
+    const res = await getCurrentParkScope();
+    const parks = Array.isArray(res?.data) ? res.data : [];
+    const currentPark = parks.find((park) => String(park.tenantId) === String(loginForm.value.tenantId)) || parks[0];
+    if (currentPark) setCurrentPark(currentPark);
+  } catch (error) {
+    console.warn("加载园区范围失败，稍后可在我的页面重试", error);
+  }
   store.dispatch("GetInfo").then(() => {
     uni.switchTab({
       url: "/pages/index",

@@ -7,7 +7,7 @@
     }">
       <view class="header-switch" @click="communityBtn">
         <view class="header-switch-txt">
-          郑州临空生物医药园
+          {{ parkName }}
         </view>
         <!-- <image src="../static/images/icon/home/swap.svg" mode=""></image> -->
       </view>
@@ -17,7 +17,7 @@
       <!-- logo区域 -->
       <view class="logo-box">
         <view class="name">
-          <view class="title">临空生物</view>
+          <view class="title">{{ parkBrand }}</view>
           <view class="title">智慧园区系统</view>
         </view>
         <image :src="homeImg" class="logo-img"></image>
@@ -130,11 +130,25 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
 
 import { getNoticeList, getStarEnterpriseList, getParkRecruitList, getParkInfoList, getCarouselList } from '@/api/park/park'
+import { getCurrentPark } from '@/utils/parkContext'
 const headerHeight = wx.getMenuButtonBoundingClientRect();
 import homeImg from '@/static/images/icon/home/1.png'
+
+const parkName = ref(getCurrentPark()?.parkName || '请选择园区')
+const parkBrand = computed(() => {
+  const name = parkName.value || ''
+  return name.replace(/^郑州/, '').replace(/园$/, '') || '临空'
+})
+const communityBtn = () => {
+  uni.switchTab({ url: '/pages/mine' })
+}
+onShow(() => {
+  parkName.value = getCurrentPark()?.parkName || '请选择园区'
+})
 //轮播图
 const carouselList = ref([
   // {

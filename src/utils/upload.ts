@@ -4,11 +4,11 @@ import { getToken } from '@/utils/auth'
 import errorCode from '@/utils/errorCode'
 import { toast, showConfirm, tansParams } from '@/utils/common'
 import { ResponseData, RequestUploadConfig } from '@/types/request'
+import { getCurrentParkId, getCurrentTenantId } from '@/utils/parkContext'
 
 let timeout = 10000
 const baseUrl = config.baseUrl
 const clientId = config.clientID;
-const tenantId = uni.getStorageSync("TenantId");
 
 const upload = <T>(config:RequestUploadConfig):Promise<ResponseData<T>> => {
   // 是否需要设置 token
@@ -17,8 +17,11 @@ const upload = <T>(config:RequestUploadConfig):Promise<ResponseData<T>> => {
   if (getToken() && !isToken) {
     config.header['Authorization'] = 'Bearer ' + getToken()
  	config.header['clientid'] = clientId,
-
- config.header['tenantid'] = tenantId
+    config.header['tenantid'] = getCurrentTenantId()
+    const parkId = getCurrentParkId()
+    if (parkId) {
+      config.formData = { ...(config.formData || {}), parkId: config.formData?.parkId || parkId }
+    }
   }
   // get请求映射params参数
   if (config.params) {

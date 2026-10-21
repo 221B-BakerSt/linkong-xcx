@@ -6,12 +6,12 @@ import { toast, showConfirm, tansParams } from '@/utils/common'
 import { RequestConfig, ResponseData } from '@/types/request'
 import { encryptBase64, encryptWithAes, generateAesKey, decryptWithAes, decryptBase64 } from '@/utils/crypto';
 import { encrypt, decrypt } from '@/utils/jsencrypt';
+import { getCurrentParkId, getCurrentTenantId } from '@/utils/parkContext';
 
 const encryptHeader = 'encrypt-key';
 let timeout = 10000
 const baseUrl = config.baseUrl
 const clientId = config.clientID;
-const tenantId = uni.getStorageSync("TenantId");
 const appEncrypt = config.appEncrypt;
 
 // 登录过期弹窗标记，防止重复弹窗
@@ -22,10 +22,21 @@ const request = <T>(config: RequestConfig):Promise<ResponseData<T>> => {
   // 是否需要设置 token
   const isToken = (config.headers || {}).isToken === false
   config.header = config.header || {}
+  const method = String(config.method || 'GET').toUpperCase()
+  const currentParkId = getCurrentParkId()
   if (getToken() && !isToken) {
     config.header['Authorization'] = 'Bearer ' + getToken(),
 	config.header['clientid'] = clientId,
-	config.header['tenantid'] = tenantId
+	config.header['tenantid'] = getCurrentTenantId()
+
+    // 每次请求重新读取，避免切换园区后仍使用应用启动时的旧租户。
+    if (currentParkId) {
+      if (method === 'GET' || method === 'DELETE') {
+        config.params = { ...(config.params || {}), parkId: config.params?.parkId || currentParkId }
+      } else if (config.data && typeof config.data === 'object' && !Array.isArray(config.data)) {
+        config.data = { ...config.data, parkId: config.data.parkId || currentParkId }
+      }
+    }
   }
   // get请求映射params参数
   if (config.params) {

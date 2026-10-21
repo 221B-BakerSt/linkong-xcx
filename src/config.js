@@ -1,8 +1,7 @@
 // 应用全局配置
 const config = {
     // baseUrl: 'http://192.168.1.104:8080',
-  //  baseUrl: 'https://linkong.yunlf.cn/prod-api',
-  baseUrl: 'http://192.168.1.163:8080',
+   baseUrl: 'https://linkong.yunlf.cn/prod-api',
 
   //  baseUrl: 'http://192.168.1.151:8080',
    //cloud后台网关地址

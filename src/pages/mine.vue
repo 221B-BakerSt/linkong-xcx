@@ -17,6 +17,11 @@
 		<!-- 菜单列表 -->
 		<view class="u-m-t-20 list">
 			<u-cell-group>
+			<u-cell title="当前园区" :value="currentParkName()" isLink @click="openParkSwitch">
+				<template #icon>
+					<u-icon name="map" color="#3B63FF" size="24"></u-icon>
+				</template>
+			</u-cell>
 				<u-cell title="企业诉求" isLink @click="navigateTo('/pages_home/enterprise/index')">
 				<template #icon>
 					<image src="../../static/images/icon/mine/1.png" style="width: 24px; height: 24px;"></image>
@@ -50,6 +55,26 @@
 			</u-cell>
 			</u-cell-group>
 		</view>
+		<u-popup :show="showParkSwitch" :round="10" mode="bottom" @close="showParkSwitch = false">
+			<view class="park-switch-popup">
+				<view class="park-switch-title">切换园区</view>
+				<view
+					v-for="park in parkOptions"
+					:key="park.parkId"
+					class="park-option"
+					:class="{ active: String(park.parkId) === String(currentPark?.parkId) }"
+					@click="selectPark(park)"
+				>
+					<text>{{ park.parkName }}</text>
+					<u-icon
+						v-if="String(park.parkId) === String(currentPark?.parkId)"
+						name="checkmark"
+						color="#3B63FF"
+						size="22"
+					/>
+				</view>
+			</view>
+		</u-popup>
 		<!-- 弹窗 -->
 		<u-popup :show="showLogout" :round="10" mode="bottom" @close="close" @open="open">
 			<view class="popup-content">
@@ -66,6 +91,8 @@
 
 <script setup >
 import { ref, onMounted } from 'vue'
+import { getCurrentParkScope, switchBusinessTenant } from '@/api/system/park'
+import { getCurrentPark, getCurrentTenantId, setCurrentPark } from '@/utils/parkContext'
 import store from '@/store'
 import config from '@/config.js'
 
@@ -75,10 +102,62 @@ const name = ref('张xx')
 const company = ref('河南云立方科技')
 const version = ref(config.appInfo.version)
 const showLogout = ref(false)
+const showParkSwitch = ref(false)
+const parkOptions = ref([])
+const currentPark = ref(getCurrentPark())
+const switchingPark = ref(false)
+
+const currentParkName = () => currentPark.value?.parkName || '未选择园区'
+
+async function loadParkScope() {
+	try {
+		const res = await getCurrentParkScope()
+		const parks = Array.isArray(res?.data) ? res.data : []
+		parkOptions.value = parks
+		const storedPark = getCurrentPark()
+		const matchedPark = parks.find((park) => storedPark && String(park.parkId) === String(storedPark.parkId))
+			|| parks.find((park) => String(park.tenantId) === String(getCurrentTenantId()))
+			|| parks[0]
+		if (matchedPark) {
+			currentPark.value = matchedPark
+			setCurrentPark(matchedPark)
+		}
+	} catch (error) {
+		console.error('获取园区权限范围失败:', error)
+	}
+}
+
+function openParkSwitch() {
+	if (parkOptions.value.length > 1) {
+		showParkSwitch.value = true
+	} else {
+		uni.showToast({ title: '当前账号只有一个可访问园区', icon: 'none' })
+	}
+}
+
+async function selectPark(park) {
+	if (!park || switchingPark.value || String(park.parkId) === String(currentPark.value?.parkId)) {
+		showParkSwitch.value = false
+		return
+	}
+	switchingPark.value = true
+	try {
+		await switchBusinessTenant(park.tenantId)
+		setCurrentPark(park)
+		currentPark.value = park
+		showParkSwitch.value = false
+		uni.showToast({ title: `已切换至${park.parkName}`, icon: 'success' })
+		setTimeout(() => uni.switchTab({ url: '/pages/index' }), 300)
+	} catch (error) {
+		console.error('切换园区失败:', error)
+	} finally {
+		switchingPark.value = false
+	}
+}
 
 // 生命周期
 onMounted(() => {
-	console.log(store,"123")
+	loadParkScope()
 	// 从 store 获取用户信息
 	if (store.state.user.name) {
 		name.value = store.state.user.name
@@ -151,6 +230,34 @@ page {
 }
 .list{
 	padding: 0 10rpx;
+}
+
+.park-switch-popup {
+	padding: 34rpx 30rpx 48rpx;
+	background-color: #fff;
+}
+
+.park-switch-title {
+	padding-bottom: 22rpx;
+	font-size: 32rpx;
+	font-weight: 600;
+	text-align: center;
+	color: #222;
+}
+
+.park-option {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 26rpx 12rpx;
+	border-bottom: 1rpx solid #f0f0f0;
+	font-size: 30rpx;
+	color: #333;
+}
+
+.park-option.active {
+	color: #3B63FF;
+	font-weight: 600;
 }
 
 </style>
