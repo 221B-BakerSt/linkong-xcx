@@ -1,0 +1,770 @@
+{
+  "easycom": {
+    "custom": {
+      "^u--(.*)": "uview-plus/components/u-$1/u-$1.vue",
+      "^up-(.*)": "uview-plus/components/u-$1/u-$1.vue",
+      "^u-([^-].*)": "uview-plus/components/u-$1/u-$1.vue",
+      "qiun-(.*)": "@/components/qiun-data-charts/components/qiun-$1/qiun-$1.vue",
+      "geek-(.*)": "@/components/geek-xd/components/geek-$1/geek-$1.vue",
+      "gx-(.*)": "@/components/geek-xd/components/geek-$1/geek-$1.vue"
+    }
+  },
+  "pages": [
+    {
+      "path": "pages/index",
+      "style": {
+        "navigationBarTitleText": "首页",
+        "navigationStyle": "custom",
+        "navigationBarBackgroundColor": "#f5f6f7",
+        "backgroundColor": "#f5f6f7"
+      }
+    },
+    {
+      "path": "pages/services",
+      "style": {
+        "navigationBarTitleText": "特色服务"
+      }
+    },
+    {
+      "path": "pages/park",
+      "style": {
+        "navigationBarTitleText": "园区服务"
+      }
+    },
+    {
+      "path": "pages/mine",
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    },
+    {
+      "path": "pages/login",
+      "style": {
+        "navigationBarTitleText": "登录"
+      }
+    },
+    {
+      "path": "pages/register",
+      "style": {
+        "navigationBarTitleText": "注册"
+      }
+    },
+
+    {
+      "path": "pages/common/webview/index",
+      "style": {
+        "navigationBarTitleText": "浏览网页"
+      }
+    },
+    {
+      "path": "pages/common/textview/index",
+      "style": {
+        "navigationBarTitleText": "浏览文本"
+      }
+    },
+    {
+      "path": "pages/common/detail",
+      "style": {
+        "navigationBarTitleText": ""
+      }
+    }
+  ],
+  "subPackages": [
+    {
+      "root": "pages_home",
+      "pages": [
+        // 园区房源
+        {
+          "path": "house/index",
+          "style": {
+            "navigationBarTitleText": "园区房源"
+          }
+        },
+        {
+          "path": "house/houseList",
+          "style": {
+            "navigationBarTitleText": "园区房源"
+          }
+        },
+        {
+          "path": "house/details",
+          "style": {
+            "navigationBarTitleText": "房源详情"
+          }
+        },
+        {
+          "path": "house/success",
+          "style": {
+            "navigationBarTitleText": "预约成功"
+          }
+        },
+        {
+          "path": "house/appointmentList",
+          "style": {
+            "navigationBarTitleText": "房源预约记录"
+          }
+        },
+
+        {
+          "path": "house/appointmentDetails",
+          "style": {
+            "navigationBarTitleText": "房源预约详情"
+          }
+        },
+        // 园区会议室
+        {
+          "path": "meetingRoom/index",
+          "style": {
+            "navigationBarTitleText": "园区会议室"
+          }
+        },
+        {
+          "path": "meetingRoom/meetingList",
+          "style": {
+            "navigationBarTitleText": "园区会议室"
+          }
+        },
+        {
+          "path": "meetingRoom/details",
+          "style": {
+            "navigationBarTitleText": "会议室详情"
+          }
+        },
+        {
+          "path": "meetingRoom/confirm",
+          "style": {
+            "navigationBarTitleText": "预约确认"
+          }
+        },
+        {
+          "path": "meetingRoom/success",
+          "style": {
+            "navigationBarTitleText": "预约成功"
+          }
+        },
+        {
+          "path": "meetingRoom/appointmentList",
+          "style": {
+            "navigationBarTitleText": "会议室预约记录"
+          }
+        },
+
+        {
+          "path": "meetingRoom/appointmentDetails",
+          "style": {
+            "navigationBarTitleText": "会议室预约详情"
+          }
+        },
+        // 园区公寓
+        {
+          "path": "apartment/index",
+          "style": {
+            "navigationBarTitleText": "园区公寓"
+          }
+        },
+        {
+          "path": "apartment/apartmentList",
+          "style": {
+            "navigationBarTitleText": "园区公寓"
+          }
+        },
+        {
+          "path": "apartment/details",
+          "style": {
+            "navigationBarTitleText": "公寓详情"
+          }
+        },
+        {
+          "path": "apartment/confirm",
+          "style": {
+            "navigationBarTitleText": "预约确认"
+          }
+        },
+        {
+          "path": "apartment/success",
+          "style": {
+            "navigationBarTitleText": "预约成功"
+          }
+        },
+        {
+          "path": "apartment/appointmentList",
+          "style": {
+            "navigationBarTitleText": "公寓预约记录"
+          }
+        },
+        // 公寓预约详情页
+        {
+          "path": "apartment/appointmentDetails",
+          "style": {
+            "navigationBarTitleText": "公寓预约详情"
+          }
+        },
+        // 园区餐饮
+        {
+          "path": "food/index",
+          "style": {
+            "navigationBarTitleText": "园区餐饮"
+          }
+        },
+        {
+          "path": "food/foodList",
+          "style": {
+            "navigationBarTitleText": "园区餐饮"
+          }
+        },
+        {
+          "path": "food/details",
+          "style": {
+            "navigationBarTitleText": "餐饮详情"
+          }
+        },
+        // 企业诉求
+        {
+          "path": "enterprise/index",
+          "style": {
+            "navigationBarTitleText": "企业诉求"
+          }
+        },
+        {
+          "path": "enterprise/add",
+          "style": {
+            "navigationBarTitleText": "企业诉求"
+          }
+        },
+        {
+          "path": "enterprise/success",
+          "style": {
+            "navigationBarTitleText": "企业诉求"
+          }
+        },
+        {
+          "path": "enterprise/list",
+          "style": {
+            "navigationBarTitleText": "企业诉求"
+          }
+        },
+        {
+          "path": "enterprise/details",
+          "style": {
+            "navigationBarTitleText": "企业诉求"
+          }
+        },
+        // 园区超市
+        {
+          "path": "supermarket/index",
+          "style": {
+            "navigationBarTitleText": "园区超市"
+          }
+        },
+        {
+          "path": "supermarket/list",
+          "style": {
+            "navigationBarTitleText": "园区超市"
+          }
+        },
+        {
+          "path": "supermarket/details",
+          "style": {
+            "navigationBarTitleText": "园区超市"
+          }
+        },
+        // 园区文印店
+        {
+          "path": "wenyinStore/index",
+          "style": {
+            "navigationBarTitleText": "园区文印店"
+          }
+        },
+        {
+          "path": "wenyinStore/list",
+          "style": {
+            "navigationBarTitleText": "园区文印店"
+          }
+        },
+        {
+          "path": "wenyinStore/details",
+          "style": {
+            "navigationBarTitleText": "园区文印店"
+          }
+        },
+        // 职工活动中心
+        {
+          "path": "employee/index",
+          "style": {
+            "navigationBarTitleText": "职工活动中心"
+          }
+        },
+        {
+          "path": "employee/list",
+          "style": {
+            "navigationBarTitleText": "职工活动中心"
+          }
+        },
+        {
+          "path": "employee/details",
+          "style": {
+            "navigationBarTitleText": "职工活动中心"
+          }
+        },
+        // 园区银行
+        {
+          "path": "bank/index",
+          "style": {
+            "navigationBarTitleText": "园区银行"
+          }
+        },
+        {
+          "path": "bank/list",
+          "style": {
+            "navigationBarTitleText": "园区银行"
+          }
+        },
+        {
+          "path": "bank/details",
+          "style": {
+            "navigationBarTitleText": "园区银行"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages_services",
+      "pages": [
+        {
+          "path": "technical/technical",
+          "style": {
+            "navigationBarTitleText": "技术服务"
+          }
+        },
+        {
+          "path": "technical/technicalList",
+          "style": {
+            "navigationBarTitleText": "技术服务"
+          }
+        },
+        {
+          "path": "technical/technicalDetails",
+          "style": {
+            "navigationBarTitleText": "技术服务"
+          }
+        },
+        {
+          "path": "finance/financeDetails",
+          "style": {
+            "navigationBarTitleText": "金融服务"
+          }
+        },
+        {
+          "path": "finance/financeList",
+          "style": {
+            "navigationBarTitleText": "金融服务"
+          }
+        },
+        {
+          "path": "finance/finance",
+          "style": {
+            "navigationBarTitleText": "金融服务"
+          }
+        },
+        {
+          "path": "policy/policy",
+          "style": {
+            "navigationBarTitleText": "政策服务"
+          }
+        },
+        {
+          "path": "policy/declareList",
+          "style": {
+            "navigationBarTitleText": "政策申报"
+          }
+        },
+        {
+          "path": "policy/consultList",
+          "style": {
+            "navigationBarTitleText": "精准推送"
+          }
+        },
+        {
+          "path": "policy/supermarketList",
+          "style": {
+            "navigationBarTitleText": "政策超市"
+          }
+        },
+        {
+          "path": "policy/declareDetails",
+          "style": {
+            "navigationBarTitleText": "政策申报"
+          }
+        },
+        {
+          "path": "policy/consultDetails",
+          "style": {
+            "navigationBarTitleText": "政策咨询"
+          }
+        },
+        {
+          "path": "policy/supermarketDetails",
+          "style": {
+            "navigationBarTitleText": "政策超市"
+          }
+        },
+        {
+          "path": "government/government",
+          "style": {
+            "navigationBarTitleText": "政务服务"
+          }
+        },
+        {
+          "path": "government/governmentList",
+          "style": {
+            "navigationBarTitleText": "政务服务"
+          }
+        },
+        {
+          "path": "government/governmentDetails",
+          "style": {
+            "navigationBarTitleText": "政务服务"
+          }
+        },
+        {
+          "path": "institution/institution",
+          "style": {
+            "navigationBarTitleText": "服务机构"
+          }
+        },
+        {
+          "path": "institution/institutionDetails",
+          "style": {
+            "navigationBarTitleText": "服务机构"
+          }
+        },
+        {
+          "path": "workOrder/index",
+          "style": {
+            "navigationBarTitleText": "\u5de5\u5355\u62a5\u4e8b\u62a5\u4fee"
+          }
+        },
+        {
+          "path": "workOrder/create",
+          "style": {
+            "navigationBarTitleText": "\u53d1\u8d77\u5de5\u5355"
+          }
+        },
+        {
+          "path": "workOrder/list",
+          "style": {
+            "navigationBarTitleText": "\u5de5\u5355\u5217\u8868"
+          }
+        },
+        {
+          "path": "workOrder/detail",
+          "style": {
+            "navigationBarTitleText": "\u5de5\u5355\u8be6\u60c5"
+          }
+        },
+        {
+          "path": "consult",
+          "style": {
+            "navigationBarTitleText": "联系我们"
+          }
+        },
+        {
+          "path": "success",
+          "style": {
+            "navigationBarTitleText": "联系我们"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages_park",
+      "pages": [
+        {
+          "path": "activity/registration",
+          "style": {
+            "navigationBarTitleText": "活动报名"
+          }
+        },
+        {
+          "path": "activity/registrationAdd",
+          "style": {
+            "navigationBarTitleText": "活动报名"
+          }
+        },
+        {
+          "path": "activity/registrationDetails",
+          "style": {
+            "navigationBarTitleText": "活动报名"
+          }
+        },
+        {
+          "path": "activity/registrationSubmit",
+          "style": {
+            "navigationBarTitleText": "活动报名"
+          }
+        },
+        {
+          "path": "notice/notice",
+          "style": {
+            "navigationBarTitleText": "通知公告"
+          }
+        },
+        {
+          "path": "notice/noticeDetails",
+          "style": {
+            "navigationBarTitleText": "通知公告"
+          }
+        },
+        {
+            "path": "asset/coolHeat/index",
+          "style": {
+            "navigationBarTitleText": "制冷供暖"
+          }
+        },
+        {
+          "path": "asset/coolHeat/coolHeat",
+          "style": {
+            "navigationBarTitleText": "制冷供暖"
+          }
+        },
+        {
+          "path": "asset/coolHeat/coolHeatAdd",
+          "style": {
+            "navigationBarTitleText": "制冷供暖"
+          }
+        },
+        {
+          "path": "asset/coolHeat/coolHeatDetail",
+          "style": {
+            "navigationBarTitleText": "制冷供暖"
+          }
+        },
+        {
+          "path": "asset/coolHeat/coolHeatSubmit",
+          "style": {
+            "navigationBarTitleText": "制冷供暖"
+          }
+        },
+        {
+          "path": "asset/boiler/boiler",
+          "style": {
+            "navigationBarTitleText": "园区锅炉"
+          }
+        },
+        {
+          "path": "asset/sewage/sewage",
+          "style": {
+            "navigationBarTitleText": "园区污水"
+          }
+        },
+        {
+          "path": "survey/satisfaction",
+          "style": {
+            "navigationBarTitleText": "满意度调查"
+          }
+        },
+        {
+          "path": "survey/restaurant",
+          "style": {
+            "navigationBarTitleText": "满意度调查"
+          }
+        },
+        {
+          "path": "survey/property",
+          "style": {
+            "navigationBarTitleText": "满意度调查"
+          }
+        },
+        {
+          "path": "survey/satisfactionSubmit",
+          "style": {
+            "navigationBarTitleText": "满意度调查"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages_info",
+      "pages": [
+        {
+          "path": "info/index",
+          "style": {
+            "navigationBarTitleText": "信息填报"
+          }
+        },
+        {
+          "path": "info/report1",
+          "style": {
+            "navigationBarTitleText": "信息填报"
+          }
+        },
+        {
+          "path": "info/report2",
+          "style": {
+            "navigationBarTitleText": "信息填报"
+          }
+        },
+        {
+          "path": "info/report3",
+          "style": {
+            "navigationBarTitleText": "信息填报"
+          }
+        },
+        {
+          "path": "info/report4",
+          "style": {
+            "navigationBarTitleText": "信息填报"
+          }
+        },
+        {
+          "path": "info/report5",
+          "style": {
+            "navigationBarTitleText": "信息填报"
+          }
+        },
+        {
+          "path": "info/report6",
+          "style": {
+            "navigationBarTitleText": "信息填报"
+          }
+        },
+        {
+          "path": "info/success",
+          "style": {
+            "navigationBarTitleText": "信息填报"
+          }
+        },
+        {
+          "path": "info/details",
+          "style": {
+            "navigationBarTitleText": "信息填报"
+          }
+        },
+        // 考核
+        {
+          "path": "assessment/index",
+          "style": {
+            "navigationBarTitleText": "考核"
+          }
+        },
+        {
+          "path": "assessment/add",
+          "style": {
+            "navigationBarTitleText": "考核"
+          }
+        },
+        {
+          "path": "assessment/details",
+          "style": {
+            "navigationBarTitleText": "考核"
+          }
+        },
+        {
+          "path": "assessment/success",
+          "style": {
+            "navigationBarTitleText": "考核"
+          }
+        },
+        // 预警
+        {
+          "path": "warning/index",
+          "style": {
+            "navigationBarTitleText": "预警"
+          }
+        },
+        {
+          "path": "warning/zhangDan",
+          "style": {
+            "navigationBarTitleText": "预警"
+          }
+        },
+        {
+          "path": "warning/heTong",
+          "style": {
+            "navigationBarTitleText": "预警"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages_mine/pages",
+      "pages": [
+        {
+          "path": "info/index",
+          "style": {
+            "navigationBarTitleText": "个人信息"
+          }
+        },
+        {
+          "path": "info/edit",
+          "style": {
+            "navigationBarTitleText": "编辑资料"
+          }
+        },
+        {
+          "path": "shuttle/index",
+          "style": {
+            "navigationBarTitleText": "班车预约",
+            "enablePullDownRefresh": true
+          }
+        },
+        {
+          "path": "shuttle/records",
+          "style": {
+            "navigationBarTitleText": "班车预约记录",
+            "enablePullDownRefresh": true
+          }
+        },
+        {
+          "path": "shuttle/detail",
+          "style": {
+            "navigationBarTitleText": "班车预约详情"
+          }
+        },
+        {
+          "path": "pwd/index",
+          "style": {
+            "navigationBarTitleText": "修改密码"
+          }
+        }
+      ]
+    }
+  ],
+  "tabBar": {
+    "color": "#000000",
+    "selectedColor": "#000000",
+    "borderStyle": "white",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index",
+        "iconPath": "static/images/tabbar/home.png",
+        "selectedIconPath": "static/images/tabbar/home_.png",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/services",
+        "iconPath": "static/images/tabbar/services.png",
+        "selectedIconPath": "static/images/tabbar/services_.png",
+        "text": "特色服务"
+      },
+      {
+        "pagePath": "pages/park",
+        "iconPath": "static/images/tabbar/park.png",
+        "selectedIconPath": "static/images/tabbar/park_.png",
+        "text": "园区服务"
+      },
+      {
+        "pagePath": "pages/mine",
+        "iconPath": "static/images/tabbar/mine.png",
+        "selectedIconPath": "static/images/tabbar/mine_.png",
+        "text": "我的"
+      }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "RuoYi",
+    "navigationBarBackgroundColor": "#FFFFFF"
+  }
+}
