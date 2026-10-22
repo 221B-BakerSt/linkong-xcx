@@ -65,6 +65,16 @@
         <view class="list-container">
             <view class="policy-list">
                 <view
+                    v-if="listState === 'error'"
+                    class="list-message retry-message"
+                    @click="fetchList"
+                >加载失败，点击重试</view>
+                <view
+                    v-else-if="listState === 'ready' && policyList.length === 0"
+                    class="list-message"
+                >{{ parkName }}暂无可申报政策</view>
+                <view
+                    v-else
                     class="policy-card"
                     v-for="(item, index) in policyList"
                     :key="index"
@@ -94,11 +104,14 @@
 
 <script>
 import { getPolicySupermarketList } from '@/api/operations/policySupermarket';
+import { getCurrentPark, getCurrentParkId } from '@/utils/parkContext';
 
 export default {
     data() {
         return {
             policyList: [],
+            listState: 'loading',
+            parkName: '当前园区',
             // 申报状态选项
             statusOptions: ["已申报", "申报中", "已结束"],
             selectedStatus: "申报中",
@@ -131,8 +144,15 @@ export default {
     mounted() {
         this.fetchList();
     },
+    onShow() {
+        this.fetchList();
+    },
     methods: {
         async fetchList() {
+            const park = getCurrentPark();
+            const expectedParkId = getCurrentParkId();
+            this.parkName = park?.parkName || '当前园区';
+            this.listState = 'loading';
             try {
                 const res = await getPolicySupermarketList({
                    
@@ -140,13 +160,17 @@ export default {
                     orderByColumn: 'createTime',
                     isAsc: 'desc',
                 });
-                if (res && res.rows) {
-                    this.policyList = res.rows;
-                } else if (res && res.data) {
-                    this.policyList = res.data;
-                }
+                if (expectedParkId !== getCurrentParkId()) return;
+                this.policyList = Array.isArray(res?.rows)
+                    ? res.rows
+                    : Array.isArray(res?.data)
+                      ? res.data
+                      : [];
+                this.listState = 'ready';
             } catch (e) {
-                uni.showToast({ title: '获取列表失败', icon: 'none' });
+                if (expectedParkId !== getCurrentParkId()) return;
+                this.policyList = [];
+                this.listState = 'error';
             }
         },
         handleCardClick(item) {
@@ -343,6 +367,17 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.list-message {
+  margin: 56px 16px;
+  color: #7a8795;
+  font-size: 14px;
+  text-align: center;
+}
+
+.retry-message {
+  color: #2f7ee6;
 }
 
 .policy-card {

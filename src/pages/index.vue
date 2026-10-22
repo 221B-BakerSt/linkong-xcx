@@ -69,7 +69,8 @@
           <view class="notice-title">通知<text class="notice-title-bold">公告</text></view>
           <up-line direction="col" length="40rpx"></up-line>
           <view class="notice-scroll">
-            <view v-if="noticeList.length === 0" class="empty-message">暂无新消息</view>
+            <view v-if="homeLoadState.notice === 'error'" class="empty-message retry-message" @click="loadHomeData()">公告加载失败，点击重试</view>
+            <view v-else-if="noticeList.length === 0" class="empty-message">暂无新消息</view>
             <view v-else v-for="(notice, index) in noticeList" :key="notice.id" class="notice-item" @click="toDetails(notice,'notice')"
               :style="{ transform: `translateY(-${currentIndex * 100}%)` }">
               <view class="notice-content">{{ notice.content }}</view>
@@ -94,7 +95,8 @@
       <view class="tab-content" @touchstart="touchStart" @touchend="touchEnd">
         <!-- 园企资讯 -->
         <view v-if="activeTab === 1" class="tab-pane">
-          <view v-if="tabData[1].length === 0" class="empty-message">暂无新消息</view>
+          <view v-if="homeLoadState.info === 'error'" class="empty-message retry-message" @click="loadHomeData()">资讯加载失败，点击重试</view>
+          <view v-else-if="tabData[1].length === 0" class="empty-message">暂无新消息</view>
           <view v-else v-for="item in tabData[1]" :key="item.id" class="news-item" @click="toDetails(item,'zixun')">
             <view class="news-image">
               <image :src="item.image" mode="aspectFill"></image>
@@ -108,7 +110,8 @@
 
         <!-- 园企招聘 -->
         <view v-if="activeTab === 2" class="tab-pane2">
-          <view v-if="tabData[2].length === 0" class="empty-message">暂无新消息</view>
+          <view v-if="homeLoadState.recruit === 'error'" class="empty-message retry-message" @click="loadHomeData()">招聘加载失败，点击重试</view>
+          <view v-else-if="tabData[2].length === 0" class="empty-message">暂无新消息</view>
           <view v-else v-for="item in tabData[2]" :key="item.id" class="news-item" @click="toDetails(item,'zhaoPin')">
             <view class="news-title">{{ item.title }}</view>
             <view class="news-date">{{ item.date }}</view>
@@ -117,7 +120,8 @@
 
         <!-- 明星企业 -->
         <view v-if="activeTab === 3" class="tab-pane3">
-          <view v-if="tabData[3].length === 0" class="empty-message">暂无新消息</view>
+          <view v-if="homeLoadState.enterprise === 'error'" class="empty-message retry-message" @click="loadHomeData()">企业列表加载失败，点击重试</view>
+          <view v-else-if="tabData[3].length === 0" class="empty-message">暂无新消息</view>
           <view v-else v-for="item in tabData[3]" :key="item.id" class="news-item" @click="toDetails(item,'star')">
             <view class="news-image">
               <image :src="item.logoOssUrls" mode="aspectFill"></image>
@@ -153,6 +157,13 @@ const communityBtn = () => {
 let loadedParkId = ''
 let homeRefreshToken = 0
 let noticeTimer = null
+const SHARED_HOME_BANNER_URL = 'https://linkong.yunlf.cn/linkong/2026/04/20/a4cbca1dabd642868d75f7045dfbd85f.png'
+const homeLoadState = ref({
+  notice: 'ready',
+  info: 'ready',
+  recruit: 'ready',
+  enterprise: 'ready'
+})
 
 onShow(() => {
   parkName.value = getCurrentPark()?.parkName || '请选择园区'
@@ -162,18 +173,14 @@ onShow(() => {
   }
 })
 //轮播图
-const carouselList = ref([
-  // {
-  //   image:
-  //     "http://linkong.yunlf.cn/linkong/2026/03/25/c04beda8c4dd4df8820db05ee2fbd3c6.png",
-  //   title: "临空生物园区",
-  // },
-  // {
-  //   image:
-  //     "http://www.lifezhengzhou.com/upload/resources/image/2020/12/02/653779_700x700.jpg?r=1606893769496",
-  //   title: "临空生物园区2",
-  // },
-]);
+const carouselList = ref([])
+
+function useSharedHomeBanner() {
+  carouselList.value = [{
+    image: SHARED_HOME_BANNER_URL,
+    title: '临空智慧园区'
+  }]
+}
 
 // 公告数据
 const noticeList = ref([]);
@@ -185,13 +192,16 @@ async function getCarouselListApi(expectedParkId) {
   try {
     const res = await getCarouselList()
     if (getCurrentParkId() === expectedParkId && res && res.rows) {
-      carouselList.value = res.rows.map(item => ({
+      const banners = res.rows.map(item => ({
         image: item.ossUrls || '',
         title: item.createTime || ''
-      }))
+      })).filter(item => item.image)
+      carouselList.value = banners.length > 0 ? banners : []
+      if (carouselList.value.length === 0) useSharedHomeBanner()
     }
   } catch (e) {
     console.error('获取轮播图失败:', e)
+    if (getCurrentParkId() === expectedParkId) useSharedHomeBanner()
   }
 }
 // 获取通知公告列表
@@ -204,9 +214,11 @@ const getNoticeListApi = async (expectedParkId) => {
         content: item.noticeTitle,
         date: formatTime(item.createTime)
       }))
+      homeLoadState.value.notice = 'ready'
     }
   } catch (e) {
     console.error('获取公告列表失败:', e)
+    if (getCurrentParkId() === expectedParkId) homeLoadState.value.notice = 'error'
   }
 }
 
@@ -226,9 +238,11 @@ const getStarEnterpriseListApi = async (expectedParkId) => {
         title: item.starEnterpriseName,
         content: item.starEnterpriseProfile || ''
       }))
+      homeLoadState.value.enterprise = 'ready'
     }
   } catch (e) {
     console.error('获取明星企业列表失败:', e)
+    if (getCurrentParkId() === expectedParkId) homeLoadState.value.enterprise = 'error'
   }
 }
 
@@ -247,9 +261,11 @@ const getParkRecruitListApi = async (expectedParkId) => {
         title: item.title || '',
         date: formatTime(item.createTime)
       }))
+      homeLoadState.value.recruit = 'ready'
     }
   } catch (e) {
     console.error('获取园区招聘列表失败:', e)
+    if (getCurrentParkId() === expectedParkId) homeLoadState.value.recruit = 'error'
   }
 }
 
@@ -283,9 +299,11 @@ const getParkInfoListApi = async (expectedParkId) => {
         title: item.infoName || '',
         date: formatTime(item.createTime)
       }))
+      homeLoadState.value.info = 'ready'
     }
   } catch (e) {
     console.error('获取园区资讯列表失败:', e)
+    if (getCurrentParkId() === expectedParkId) homeLoadState.value.info = 'error'
   }
 }
 
@@ -293,9 +311,10 @@ const loadHomeData = async (parkId = getCurrentParkId()) => {
   if (!parkId) return
   const refreshToken = ++homeRefreshToken
   loadedParkId = parkId
-  carouselList.value = []
+  useSharedHomeBanner()
   noticeList.value = []
   tabData.value = { 1: [], 2: [], 3: [] }
+  homeLoadState.value = { notice: 'ready', info: 'ready', recruit: 'ready', enterprise: 'ready' }
   currentIndex.value = 0
 
   await Promise.allSettled([
@@ -850,5 +869,9 @@ view {
   text-align: center;
   font-size: 26rpx;
   color: #999;
+}
+
+.retry-message {
+  color: #3b63ff;
 }
 </style>

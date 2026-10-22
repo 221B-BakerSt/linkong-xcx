@@ -2,6 +2,20 @@
     <view class="container">
         <view class="institution-list">
             <view
+                v-if="listState === 'error'"
+                class="list-message retry-message"
+                @click="fetchList"
+            >
+                <text>加载失败，点击重试</text>
+            </view>
+            <view
+                v-else-if="listState === 'ready' && institutionList.length === 0"
+                class="list-message"
+            >
+                <text>{{ parkName }}暂无已发布的服务机构</text>
+            </view>
+            <view
+                v-else
                 v-for="(item, index) in institutionList"
                 :key="index"
                 class="institution-item"
@@ -37,31 +51,45 @@
 
 <script>
 import { getServiceOrganizationList } from "@/api/operations/policySupermarket";
+import { getCurrentPark, getCurrentParkId } from "@/utils/parkContext";
 
 export default {
     data() {
         return {
             institutionList: [],
+            listState: "loading",
+            parkName: "当前园区",
         };
     },
     mounted() {
         this.fetchList();
     },
+    onShow() {
+        this.fetchList();
+    },
     methods: {
         async fetchList() {
+            const park = getCurrentPark();
+            const expectedParkId = getCurrentParkId();
+            this.parkName = park?.parkName || "当前园区";
+            this.listState = "loading";
             try {
                 const res = await getServiceOrganizationList({
                     policyType: "governmentAffairs",
                     orderByColumn: 'createTime',
                     isAsc: 'desc',
                 });
-                if (res && res.rows) {
-                    this.institutionList = res.rows;
-                } else if (res && res.data) {
-                    this.institutionList = res.data;
-                }
+                if (expectedParkId !== getCurrentParkId()) return;
+                this.institutionList = Array.isArray(res?.rows)
+                    ? res.rows
+                    : Array.isArray(res?.data)
+                      ? res.data
+                      : [];
+                this.listState = "ready";
             } catch (e) {
-                uni.showToast({ title: "获取列表失败", icon: "none" });
+                if (expectedParkId !== getCurrentParkId()) return;
+                this.institutionList = [];
+                this.listState = "error";
             }
         },
         handleInstitutionClick(item) {
@@ -117,6 +145,17 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+.list-message {
+    margin: 48px 16px;
+    color: #7a8795;
+    font-size: 14px;
+    text-align: center;
+}
+
+.retry-message {
+    color: #2f7ee6;
 }
 
 .institution-item {

@@ -37,7 +37,7 @@
               ></image>
               <view class="data-item-content">
                 <view class="data-item-title">COD</view>
-                <view class="data-item-value">20</view>
+                <view class="data-item-value">{{ valueOf(record?.cod) }}</view>
               </view>
             </view>
             <view class="data-item">
@@ -48,7 +48,7 @@
               ></image>
               <view class="data-item-content">
                 <view class="data-item-title">氨氮</view>
-                <view class="data-item-value">20</view>
+                <view class="data-item-value">{{ valueOf(record?.ammoniaNitrogen) }}</view>
               </view>
             </view>
             <view class="data-item">
@@ -59,7 +59,7 @@
               ></image>
               <view class="data-item-content">
                 <view class="data-item-title">总磷</view>
-                <view class="data-item-value">20</view>
+                <view class="data-item-value">{{ valueOf(record?.totalPhosphorus) }}</view>
               </view>
             </view>
             <view class="data-item">
@@ -70,7 +70,7 @@
               ></image>
               <view class="data-item-content">
                 <view class="data-item-title">总氮</view>
-                <view class="data-item-value">20</view>
+                <view class="data-item-value">{{ valueOf(record?.totalNitrogen) }}</view>
               </view>
             </view>
           </view>
@@ -81,7 +81,27 @@
 </template>
 
 <script setup>
-// 页面逻辑
+import { ref } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
+import { getSewageTreatmentRecords } from '@/api/operations/assetRecords'
+import { getCurrentParkId } from '@/utils/parkContext'
+
+const record = ref(null)
+const valueOf = (value) => value === null || value === undefined || value === '' ? '0' : String(value)
+
+async function loadLatestRecord() {
+  const expectedParkId = getCurrentParkId()
+  try {
+    const res = await getSewageTreatmentRecords({ pageNum: 1, pageSize: 1, orderByColumn: 'dataDate', isAsc: 'desc' })
+    if (getCurrentParkId() !== expectedParkId) return
+    record.value = Array.isArray(res?.rows) && res.rows.length > 0 ? res.rows[0] : null
+  } catch (error) {
+    if (getCurrentParkId() === expectedParkId) record.value = null
+    console.error('获取污水处理记录失败:', error)
+  }
+}
+
+onShow(loadLatestRecord)
 </script>
 
 <style lang="scss" scoped>

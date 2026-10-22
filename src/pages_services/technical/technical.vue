@@ -3,10 +3,10 @@
         <view class="header">
             <text class="header-title">技术服务</text>
             <text class="header-subtitle">CXO一站式解决方案</text>
-            <text class="header-desc">全面服务中国生物医药产业</text>
+            <text class="header-desc">{{ isBioPark ? '全面服务中国生物医药产业' : `${parkName}暂无已发布的技术服务内容` }}</text>
         </view>
 
-        <scroll-view class="content" scroll-y>
+        <scroll-view v-if="isBioPark" class="content" scroll-y>
             <view class="service-item">
                 <view class="service-header">
                     <text class="service-title">新药筛选检测平台</text>
@@ -149,6 +149,11 @@
             </view>
         </scroll-view>
 
+        <view v-else class="empty-content">
+            <text class="empty-title">暂无技术服务内容</text>
+            <text class="empty-desc">医工园发布服务目录后将在此展示，不展示生物园的专属服务内容。</text>
+        </view>
+
         <!-- 联系我们插件 -->
         <view class="contact-plugin" @click="handleContactClick">
             <image
@@ -161,11 +166,28 @@
 </template>
 
 <script>
+import { getCurrentPark } from '@/utils/parkContext';
+
 export default {
     data() {
-        return {};
+        return {
+            isBioPark: true,
+            parkName: '当前园区',
+        };
+    },
+    mounted() {
+        this.refreshParkContent();
+    },
+    onShow() {
+        this.refreshParkContent();
     },
     methods: {
+        refreshParkContent() {
+            const park = getCurrentPark();
+            this.parkName = park?.parkName || '当前园区';
+            this.isBioPark = String(park?.parkCode || '') === 'A'
+                || String(park?.tenantId || '') === '000000';
+        },
         handleDetailClick(serviceName) {
             uni.navigateTo({
                 url: "/pages_services/technical/technicalList",
@@ -234,6 +256,29 @@ export default {
 .content {
     flex: 1;
     overflow: hidden;
+}
+
+.empty-content {
+    margin: 32rpx;
+    padding: 64rpx 40rpx;
+    border-radius: 12rpx;
+    background: #ffffff;
+    text-align: center;
+}
+
+.empty-title {
+    display: block;
+    color: #333333;
+    font-size: 32rpx;
+    font-weight: 600;
+}
+
+.empty-desc {
+    display: block;
+    margin-top: 20rpx;
+    color: #777777;
+    font-size: 28rpx;
+    line-height: 1.7;
 }
 
 .service-item {

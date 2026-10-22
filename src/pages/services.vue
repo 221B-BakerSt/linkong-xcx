@@ -36,7 +36,14 @@
         <view class="policy-section">
             <view class="section-title">政策发布</view>
             <view class="policy-list">
+                <view v-if="policyState === 'error'" class="policy-empty policy-retry" @click="fetchList">
+                    政策列表加载失败，点击重试
+                </view>
+                <view v-else-if="policyState === 'ready' && policyList.length === 0" class="policy-empty">
+                    暂无适用于{{ parkName }}的政策信息
+                </view>
                 <view
+                    v-else
                     class="policy-card"
                     v-for="(item, index) in policyList"
                     :key="index"
@@ -73,11 +80,14 @@
 
 <script>
 import { getPolicySupermarketList } from "@/api/operations/policySupermarket";
+import { getCurrentPark, getCurrentParkId } from '@/utils/parkContext';
 export default {
     data() {
         return {
             serviceList: [],
             policyList: [],
+            policyState: 'loading',
+            parkName: getCurrentPark()?.parkName || '当前园区',
             tabList: [
                 {
                     icon: "home",
@@ -116,8 +126,8 @@ export default {
         };
     },
     mounted() {
-        this.fetchList();
         this.loadData();
+        this.fetchList();
     },
     onShow() {
         // 特色服务页是 tab 页面，切换园区后页面可能不会重新 mounted。
@@ -126,19 +136,28 @@ export default {
     },
     methods: {
         async fetchList() {
+            const expectedParkId = getCurrentParkId();
+            this.parkName = getCurrentPark()?.parkName || '当前园区';
+            this.policyState = 'loading';
             try {
                 const res = await getPolicySupermarketList({
                     title: this.searchText,
                     orderByColumn: 'createTime',
                     isAsc: 'desc',
                 });
-                if (res && res.rows) {
+                if (getCurrentParkId() !== expectedParkId) return;
+                if (res && Array.isArray(res.rows)) {
                     this.policyList = res.rows;
-                } else if (res && res.data) {
+                } else if (res && Array.isArray(res.data)) {
                     this.policyList = res.data;
+                } else {
+                    this.policyList = [];
                 }
+                this.policyState = 'ready';
             } catch (e) {
-                uni.showToast({ title: "获取列表失败", icon: "none" });
+                if (getCurrentParkId() !== expectedParkId) return;
+                this.policyList = [];
+                this.policyState = 'error';
             }
         },
         handlePolicyClick(item) {
@@ -168,9 +187,6 @@ export default {
                     icon: "/static/images/icon/services/institution.png",
                     text: "服务机构",
                 },
-            ];
-            this.policyList = [
-               
             ];
         },
         // 根据字典值获取政策领域名称
@@ -305,6 +321,17 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+.policy-empty {
+    padding: 48rpx 24rpx;
+    color: #8a8a8a;
+    font-size: 28rpx;
+    text-align: center;
+}
+
+.policy-retry {
+    color: #3b63ff;
 }
 
 .policy-card {

@@ -14,9 +14,7 @@
 
       <!-- 内容 -->
       <view class="content">
-        <text
-          >郑州临空生物医药园建设有6台锅炉，其中一期建设有3台10蒸吨天然气蒸汽锅炉，二期建设有3台2.8兆瓦天然气热水锅炉以及1台0.465兆瓦天然气热水锅炉；二期3台2.8兆瓦天然气热水锅炉为冬季供暖锅炉，仅冬季供暖期启用并进行在线监测。</text
-        >
+        <text>{{ record ? '数据由园区后台维护，以下为当前园区最新锅炉运行记录。' : `${parkName}暂无锅炉运行记录。` }}</text>
       </view>
 
       <!-- 数据卡片 -->
@@ -37,7 +35,7 @@
               ></image>
               <view class="data-item-content">
                 <view class="data-item-title">NOx折算</view>
-                <view class="data-item-value">20</view>
+                <view class="data-item-value">{{ valueOf(record?.noxOpValue) }}</view>
               </view>
             </view>
             <view class="data-item">
@@ -48,7 +46,7 @@
               ></image>
               <view class="data-item-content">
                 <view class="data-item-title">烟气压力</view>
-                <view class="data-item-value">20</view>
+                <view class="data-item-value">{{ valueOf(record?.smokePressure) }}</view>
               </view>
             </view>
             <view class="data-item">
@@ -59,7 +57,7 @@
               ></image>
               <view class="data-item-content">
                 <view class="data-item-title">烟气流速</view>
-                <view class="data-item-value">20</view>
+                <view class="data-item-value">{{ valueOf(record?.smokeSpeed) }}</view>
               </view>
             </view>
             <view class="data-item">
@@ -70,7 +68,7 @@
               ></image>
               <view class="data-item-content">
                 <view class="data-item-title">烟气湿度</view>
-                <view class="data-item-value">20</view>
+                <view class="data-item-value">{{ valueOf(record?.smokeHumidity) }}</view>
               </view>
             </view>
           </view>
@@ -81,7 +79,30 @@
 </template>
 
 <script setup>
-// 页面逻辑
+import { ref } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
+import { getBoilerOperationRecords } from '@/api/operations/assetRecords'
+import { getCurrentPark, getCurrentParkId } from '@/utils/parkContext'
+
+const record = ref(null)
+const parkName = ref(getCurrentPark()?.parkName || '当前园区')
+
+const valueOf = (value) => value === null || value === undefined || value === '' ? '0' : String(value)
+
+async function loadLatestRecord() {
+  const expectedParkId = getCurrentParkId()
+  parkName.value = getCurrentPark()?.parkName || '当前园区'
+  try {
+    const res = await getBoilerOperationRecords({ pageNum: 1, pageSize: 1, orderByColumn: 'dataDate', isAsc: 'desc' })
+    if (getCurrentParkId() !== expectedParkId) return
+    record.value = Array.isArray(res?.rows) && res.rows.length > 0 ? res.rows[0] : null
+  } catch (error) {
+    if (getCurrentParkId() === expectedParkId) record.value = null
+    console.error('获取锅炉运行记录失败:', error)
+  }
+}
+
+onShow(loadLatestRecord)
 </script>
 
 <style lang="scss" scoped>
