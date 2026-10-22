@@ -51,6 +51,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
 
 import { corporateList,getCorporateList } from '@/api/park/park';
 
@@ -112,6 +113,9 @@ const fetchInfoList = async () => {
   }
 };
 onMounted(() => {
+  fetchInfoList();
+});
+onShow(() => {
   fetchInfoList();
 });
 </script>

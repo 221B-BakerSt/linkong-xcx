@@ -27,6 +27,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
 import { getEnterpriseAssessmentList } from '@/api/info/assessment';
 
 // 任务列表数据
@@ -93,6 +94,9 @@ const navigateToReport = (item) => {
 };
 
 onMounted(() => {
+  getTaskListApi();
+});
+onShow(() => {
   getTaskListApi();
 });
 </script>

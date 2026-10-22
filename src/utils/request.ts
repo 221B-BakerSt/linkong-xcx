@@ -139,11 +139,16 @@ const request = <T>(config: RequestConfig):Promise<ResponseData<T>> => {
         if (shouldShowLoading) {
           uni.hideLoading();
         }
-        
-        let { message } = error
-        if (message === 'Network Error') {
+
+        // uni.request 的失败对象在不同端字段不完全一致，不能直接解构后调用 includes。
+        const rawMessage = error && typeof error === 'object'
+          ? ((error as any).message || (error as any).errMsg)
+          : error
+        let message = String(rawMessage || '后端接口连接异常')
+        const lowerMessage = message.toLowerCase()
+        if (message === 'Network Error' || lowerMessage.includes('request:fail')) {
           message = '后端接口连接异常'
-        } else if (message.includes('timeout')) {
+        } else if (lowerMessage.includes('timeout')) {
           message = '系统接口请求超时'
         } else if (message.includes('Request failed with status code')) {
           message = '系统接口' + message.substr(message.length - 3) + '异常'

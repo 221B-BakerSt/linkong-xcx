@@ -69,7 +69,8 @@
           <view class="notice-title">通知<text class="notice-title-bold">公告</text></view>
           <up-line direction="col" length="40rpx"></up-line>
           <view class="notice-scroll">
-            <view v-for="(notice, index) in noticeList" :key="notice.id" class="notice-item" @click="toDetails(notice,'notice')"
+            <view v-if="noticeList.length === 0" class="empty-message">暂无新消息</view>
+            <view v-else v-for="(notice, index) in noticeList" :key="notice.id" class="notice-item" @click="toDetails(notice,'notice')"
               :style="{ transform: `translateY(-${currentIndex * 100}%)` }">
               <view class="notice-content">{{ notice.content }}</view>
               <view class="notice-date">{{ notice.date }}</view>
@@ -93,7 +94,8 @@
       <view class="tab-content" @touchstart="touchStart" @touchend="touchEnd">
         <!-- 园企资讯 -->
         <view v-if="activeTab === 1" class="tab-pane">
-          <view v-for="item in tabData[1]" :key="item.id" class="news-item" @click="toDetails(item,'zixun')">
+          <view v-if="tabData[1].length === 0" class="empty-message">暂无新消息</view>
+          <view v-else v-for="item in tabData[1]" :key="item.id" class="news-item" @click="toDetails(item,'zixun')">
             <view class="news-image">
               <image :src="item.image" mode="aspectFill"></image>
             </view>
@@ -106,7 +108,8 @@
 
         <!-- 园企招聘 -->
         <view v-if="activeTab === 2" class="tab-pane2">
-          <view v-for="item in tabData[2]" :key="item.id" class="news-item" @click="toDetails(item,'zhaoPin')">
+          <view v-if="tabData[2].length === 0" class="empty-message">暂无新消息</view>
+          <view v-else v-for="item in tabData[2]" :key="item.id" class="news-item" @click="toDetails(item,'zhaoPin')">
             <view class="news-title">{{ item.title }}</view>
             <view class="news-date">{{ item.date }}</view>
           </view>
@@ -114,7 +117,8 @@
 
         <!-- 明星企业 -->
         <view v-if="activeTab === 3" class="tab-pane3">
-          <view v-for="item in tabData[3]" :key="item.id" class="news-item" @click="toDetails(item,'star')">
+          <view v-if="tabData[3].length === 0" class="empty-message">暂无新消息</view>
+          <view v-else v-for="item in tabData[3]" :key="item.id" class="news-item" @click="toDetails(item,'star')">
             <view class="news-image">
               <image :src="item.logoOssUrls" mode="aspectFill"></image>
             </view>
@@ -130,11 +134,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 
 import { getNoticeList, getStarEnterpriseList, getParkRecruitList, getParkInfoList, getCarouselList } from '@/api/park/park'
-import { getCurrentPark } from '@/utils/parkContext'
+import { getCurrentPark, getCurrentParkId } from '@/utils/parkContext'
 const headerHeight = wx.getMenuButtonBoundingClientRect();
 import homeImg from '@/static/images/icon/home/1.png'
 
@@ -146,8 +150,16 @@ const parkBrand = computed(() => {
 const communityBtn = () => {
   uni.switchTab({ url: '/pages/mine' })
 }
+let loadedParkId = ''
+let homeRefreshToken = 0
+let noticeTimer = null
+
 onShow(() => {
   parkName.value = getCurrentPark()?.parkName || '请选择园区'
+  const currentParkId = getCurrentParkId()
+  if (currentParkId && currentParkId !== loadedParkId) {
+    loadHomeData(currentParkId)
+  }
 })
 //轮播图
 const carouselList = ref([
@@ -169,21 +181,24 @@ const noticeList = ref([]);
 // 滚动索引
 const currentIndex = ref(0);
 // 获取轮播
-function getCarouselListApi() {
-  getCarouselList().then(res => {
-    if (res && res.rows) {
+async function getCarouselListApi(expectedParkId) {
+  try {
+    const res = await getCarouselList()
+    if (getCurrentParkId() === expectedParkId && res && res.rows) {
       carouselList.value = res.rows.map(item => ({
         image: item.ossUrls || '',
         title: item.createTime || ''
       }))
     }
-  })
+  } catch (e) {
+    console.error('获取轮播图失败:', e)
+  }
 }
 // 获取通知公告列表
-const getNoticeListApi = async () => {
+const getNoticeListApi = async (expectedParkId) => {
   try {
     const res = await getNoticeList()
-    if (res && res.rows) {
+    if (getCurrentParkId() === expectedParkId && res && res.rows) {
       noticeList.value = res.rows.map(item => ({
         id: item.noticeId,
         content: item.noticeTitle,
@@ -196,7 +211,7 @@ const getNoticeListApi = async () => {
 }
 
 // 获取明星企业列表
-const getStarEnterpriseListApi = async () => {
+const getStarEnterpriseListApi = async (expectedParkId) => {
   try {
     const res = await getStarEnterpriseList(
       {
@@ -204,7 +219,7 @@ const getStarEnterpriseListApi = async () => {
         isAsc: 'desc',
       }
     )
-    if (res && res.rows) {
+    if (getCurrentParkId() === expectedParkId && res && res.rows) {
       tabData.value[3] = res.rows.map(item => ({
         id: item.starEnterpriseId,
         logoOssUrls: item.logoOssUrls || '',
@@ -218,7 +233,7 @@ const getStarEnterpriseListApi = async () => {
 }
 
 // 获取园区招聘列表
-const getParkRecruitListApi = async () => {
+const getParkRecruitListApi = async (expectedParkId) => {
   try {
     const res = await getParkRecruitList(
       {
@@ -226,7 +241,7 @@ const getParkRecruitListApi = async () => {
         isAsc: 'desc',
       }
     )
-    if (res && res.rows) {
+    if (getCurrentParkId() === expectedParkId && res && res.rows) {
       tabData.value[2] = res.rows.map(item => ({
         id: item.recruitId,
         title: item.title || '',
@@ -253,7 +268,7 @@ const formatTime = (timeStr) => {
 }
 
 // 获取园区资讯列表
-const getParkInfoListApi = async () => {
+const getParkInfoListApi = async (expectedParkId) => {
   try {
     const res = await getParkInfoList(
       {
@@ -261,7 +276,7 @@ const getParkInfoListApi = async () => {
         isAsc: 'desc',
       }
     )
-    if (res && res.rows) {
+    if (getCurrentParkId() === expectedParkId && res && res.rows) {
       tabData.value[1] = res.rows.map(item => ({
         id: item.infoId,
         image: item.infoCoverUrl || '',
@@ -274,20 +289,41 @@ const getParkInfoListApi = async () => {
   }
 }
 
+const loadHomeData = async (parkId = getCurrentParkId()) => {
+  if (!parkId) return
+  const refreshToken = ++homeRefreshToken
+  loadedParkId = parkId
+  carouselList.value = []
+  noticeList.value = []
+  tabData.value = { 1: [], 2: [], 3: [] }
+  currentIndex.value = 0
+
+  await Promise.allSettled([
+    getCarouselListApi(parkId),
+    getNoticeListApi(parkId),
+    getStarEnterpriseListApi(parkId),
+    getParkRecruitListApi(parkId),
+    getParkInfoListApi(parkId)
+  ])
+
+  // 园区切换期间旧请求返回时，不允许覆盖新园区的数据。
+  if (refreshToken !== homeRefreshToken || getCurrentParkId() !== parkId) return
+}
+
 // 滚动公告
 onMounted(() => {
-  getCarouselListApi()
-  getNoticeListApi()
-  getStarEnterpriseListApi()
-  getParkRecruitListApi()
-  getParkInfoListApi()
+  loadHomeData()
 
-  setInterval(() => {
+  noticeTimer = setInterval(() => {
     if (noticeList.value.length > 0) {
       currentIndex.value = (currentIndex.value + 1) % noticeList.value.length;
     }
   }, 3000);
 });
+
+onUnmounted(() => {
+  if (noticeTimer) clearInterval(noticeTimer)
+})
 
 // Tab 数据
 const tabs = ref([
@@ -806,5 +842,13 @@ view {
 
     }
   }
+}
+
+.empty-message {
+  width: 100%;
+  padding: 36rpx 0;
+  text-align: center;
+  font-size: 26rpx;
+  color: #999;
 }
 </style>

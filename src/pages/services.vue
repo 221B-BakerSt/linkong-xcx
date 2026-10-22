@@ -119,6 +119,11 @@ export default {
         this.fetchList();
         this.loadData();
     },
+    onShow() {
+        // 特色服务页是 tab 页面，切换园区后页面可能不会重新 mounted。
+        // 重新查询即可让政策等可维护数据跟随当前园区。
+        this.fetchList();
+    },
     methods: {
         async fetchList() {
             try {
