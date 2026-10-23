@@ -36,43 +36,47 @@
         <view class="policy-section">
             <view class="section-title">政策发布</view>
             <view class="policy-list">
-                <view v-if="policyState === 'error'" class="policy-empty policy-retry" @click="fetchList">
+                <view v-if="policyState === 'loading'" class="policy-empty">
+                    正在加载政策信息...
+                </view>
+                <view v-else-if="policyState === 'error'" class="policy-empty policy-retry" @click="fetchList">
                     政策列表加载失败，点击重试
                 </view>
                 <view v-else-if="policyState === 'ready' && policyList.length === 0" class="policy-empty">
                     暂无适用于{{ parkName }}的政策信息
                 </view>
-                <view
-                    v-else
-                    class="policy-card"
-                    v-for="(item, index) in policyList"
-                    :key="index"
-                    @click="handlePolicyClick(item)"
-                >
-                    <view class="policy-item">
-                        <text class="policy-title">{{ item.title }}</text>
-                        <view class="policy-info">
-                            <text class="policy-tag"
-                                >级别：{{ getPolicyRankName(item.rank) }}</text
-                            >
-                            <text class="policy-tag"
-                                >类别：{{
-                                    getPolicyDomainName(item.policyDomain)
-                                }}</text
-                            >
-                        </view>
-                        <view class="policy-time">
-                            <text class="policy-time-item"
-                                >发布时间：{{
-                                    (item.createTime || item.publishTime || "-").toString().substring(0, 10)
-                                }}</text
-                            >
-                            <text class="policy-time-item"
-                                >截止时间：{{ item.releaseTime || item.expireTime || "-" }}</text
-                            >
+                <template v-else-if="policyState === 'ready' && policyList.length > 0">
+                    <view
+                        class="policy-card"
+                        v-for="(item, index) in policyList"
+                        :key="index"
+                        @click="handlePolicyClick(item)"
+                    >
+                        <view class="policy-item">
+                            <text class="policy-title">{{ item.title }}</text>
+                            <view class="policy-info">
+                                <text class="policy-tag"
+                                    >级别：{{ getPolicyRankName(item.rank) }}</text
+                                >
+                                <text class="policy-tag"
+                                    >类别：{{
+                                        getPolicyDomainName(item.policyDomain)
+                                    }}</text
+                                >
+                            </view>
+                            <view class="policy-time">
+                                <text class="policy-time-item"
+                                    >发布时间：{{
+                                        (item.createTime || item.publishTime || "-").toString().substring(0, 10)
+                                    }}</text
+                                >
+                                <text class="policy-time-item"
+                                    >截止时间：{{ item.releaseTime || item.expireTime || "-" }}</text
+                                >
+                            </view>
                         </view>
                     </view>
-                </view>
+                </template>
             </view>
         </view>
     </view>
@@ -123,6 +127,7 @@ export default {
                 { label: "航空港区", value: "4" },
             ],
             searchText: "",
+            isFetching: false,
         };
     },
     mounted() {
@@ -136,11 +141,14 @@ export default {
     },
     methods: {
         async fetchList() {
+            if (this.isFetching) return;
+            this.isFetching = true;
             const expectedParkId = getCurrentParkId();
             this.parkName = getCurrentPark()?.parkName || '当前园区';
             this.policyState = 'loading';
             try {
                 const res = await getPolicySupermarketList({
+                    policyType: 'policy',
                     title: this.searchText,
                     orderByColumn: 'createTime',
                     isAsc: 'desc',
@@ -158,6 +166,8 @@ export default {
                 if (getCurrentParkId() !== expectedParkId) return;
                 this.policyList = [];
                 this.policyState = 'error';
+            } finally {
+                this.isFetching = false;
             }
         },
         handlePolicyClick(item) {
