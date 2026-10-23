@@ -150,6 +150,7 @@ import { getCurrentPark, getCurrentParkId } from '@/utils/parkContext'
 import { getMediaUrl } from '@/utils/media'
 const headerHeight = wx.getMenuButtonBoundingClientRect();
 import homeImg from '@/static/images/icon/home/1.png'
+import sharedHomeBanner from '@/static/images/home/shared-home-banner.jpg'
 
 const parkName = ref(getCurrentPark()?.parkName || '请选择园区')
 const parkBrand = computed(() => {
@@ -161,7 +162,9 @@ const communityBtn = () => {
 }
 let loadedParkId = ''
 let homeRefreshToken = 0
-const SHARED_HOME_BANNER_URL = 'https://linkong.yunlf.cn/linkong/2026/04/20/a4cbca1dabd642868d75f7045dfbd85f.png'
+// A small packaged fallback keeps a new park from rendering a blank carousel
+// while its own Banner entry is still being configured in the web console.
+const SHARED_HOME_BANNER_URL = sharedHomeBanner
 let noticeTimer = null
 const silentRequest = { showLoading: false }
 const homeLoadState = ref({

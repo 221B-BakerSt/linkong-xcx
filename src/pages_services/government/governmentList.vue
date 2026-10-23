@@ -73,6 +73,10 @@ export default {
           try {
               const res = await getPolicySupermarketList({
                   policyType: 'governmentAffairs',
+                  orderByColumn: 'createTime',
+                  isAsc: 'desc',
+                  pageNum: 1,
+                  pageSize: 20,
               }, { showLoading: false });
               if (res && res.rows) {
                   this.policyList = res.rows;

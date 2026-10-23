@@ -46,10 +46,10 @@
             </view>
             <view class="policy-time">
               <text class="policy-time-item"
-                >发布时间：{{ item.createTime.substring(0,10) }}</text>
+                >发布时间：{{ formatDate(item.createTime) }}</text>
               
               <text class="policy-time-item"
-                >截止时间：{{ item.releaseTime.substring(0,10) }}</text>
+                >截止时间：{{ formatDate(item.releaseTime) }}</text>
               
             </view>
           </view>
@@ -128,6 +128,8 @@ export default {
           isDeclare: '1',
           orderByColumn: 'createTime',
           isAsc: 'desc',
+          pageNum: 1,
+          pageSize: 20,
         });
         if (res && res.rows) {
           this.policyList = res.rows;
@@ -142,6 +144,9 @@ export default {
       uni.navigateTo({
         url: '/pages_services/policy/declareDetails?id=' + item.id,
       });
+    },
+    formatDate(value) {
+      return value ? String(value).slice(0, 10) : '暂无';
     },
     // 搜索
     searchBtn() {

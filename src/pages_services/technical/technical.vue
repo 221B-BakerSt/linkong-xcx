@@ -80,6 +80,8 @@ export default {
                         policyType: 'technology',
                         orderByColumn: 'createTime',
                         isAsc: 'desc',
+                        pageNum: 1,
+                        pageSize: 20,
                     },
                     { showLoading: false },
                 );

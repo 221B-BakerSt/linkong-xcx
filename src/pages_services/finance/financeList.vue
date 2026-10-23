@@ -37,6 +37,8 @@ const fetchList = async () => {
         const res = await getPolicySupermarketList({ policyType: "finance",title:searchText.value,  
         orderByColumn: 'createTime',
         isAsc: 'desc',
+        pageNum: 1,
+        pageSize: 20,
        }, { showLoading: false });
         if (res && res.rows) {
             policyList.value = res.rows;

@@ -152,6 +152,8 @@ export default {
                     title: this.searchText,
                     orderByColumn: 'createTime',
                     isAsc: 'desc',
+                    pageNum: 1,
+                    pageSize: 20,
                 }, { showLoading: false });
                 if (getCurrentParkId() !== expectedParkId) return;
                 if (res && Array.isArray(res.rows)) {

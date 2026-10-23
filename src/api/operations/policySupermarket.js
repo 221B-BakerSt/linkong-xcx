@@ -6,7 +6,8 @@ import request from '@/utils/request'
  */
 export function getPolicySupermarketList(params, options = {}) {
   return request({
-    url: '/operations/policySupermarket/list',
+    // 小程序列表不需要富文本正文和附件，详情页再通过 ID 请求完整内容。
+    url: '/operations/policySupermarket/summary-list',
     method: 'GET',
     params,
     ...options

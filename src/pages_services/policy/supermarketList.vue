@@ -112,6 +112,7 @@ export default {
             policyList: [],
             listState: 'loading',
             parkName: '当前园区',
+            isFetching: false,
             // 申报状态选项
             statusOptions: ["已申报", "申报中", "已结束"],
             selectedStatus: "申报中",
@@ -149,6 +150,8 @@ export default {
     },
     methods: {
         async fetchList() {
+            if (this.isFetching) return;
+            this.isFetching = true;
             const park = getCurrentPark();
             const expectedParkId = getCurrentParkId();
             this.parkName = park?.parkName || '当前园区';
@@ -159,6 +162,8 @@ export default {
                     policyType: 'policy',
                     orderByColumn: 'createTime',
                     isAsc: 'desc',
+                    pageNum: 1,
+                    pageSize: 20,
                 }, { showLoading: false });
                 if (expectedParkId !== getCurrentParkId()) return;
                 this.policyList = Array.isArray(res?.rows)
@@ -171,6 +176,8 @@ export default {
                 if (expectedParkId !== getCurrentParkId()) return;
                 this.policyList = [];
                 this.listState = 'error';
+            } finally {
+                this.isFetching = false;
             }
         },
         handleCardClick(item) {
