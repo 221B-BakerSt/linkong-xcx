@@ -144,7 +144,7 @@ export default {
                     title: this.searchText,
                     orderByColumn: 'createTime',
                     isAsc: 'desc',
-                });
+                }, { showLoading: false });
                 if (getCurrentParkId() !== expectedParkId) return;
                 if (res && Array.isArray(res.rows)) {
                     this.policyList = res.rows;

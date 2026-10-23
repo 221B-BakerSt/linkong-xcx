@@ -2,159 +2,42 @@
     <view class="container">
         <view class="header">
             <text class="header-title">技术服务</text>
-            <text class="header-subtitle">CXO一站式解决方案</text>
-            <text class="header-desc">{{ isBioPark ? '全面服务中国生物医药产业' : `${parkName}暂无已发布的技术服务内容` }}</text>
+            <text class="header-subtitle">园区服务目录</text>
+            <text class="header-desc">{{ parkName }}</text>
         </view>
 
-        <scroll-view v-if="isBioPark" class="content" scroll-y>
-            <view class="service-item">
+        <scroll-view v-if="listState === 'ready' && serviceList.length" class="content" scroll-y>
+            <view
+                v-for="item in serviceList"
+                :key="item.id"
+                class="service-item"
+                @click="handleDetailClick(item)"
+            >
                 <view class="service-header">
-                    <text class="service-title">新药筛选检测平台</text>
+                    <text class="service-title">{{ item.title }}</text>
                 </view>
-                <view class="service-content">
-                    <text class="service-desc"
-                        >小分子药物理化分析及稳定性研究</text
-                    >
-                    <text class="service-desc"
-                        >小分子药物成分分析及含量测定</text
-                    >
-                    <text class="service-desc">抗体/酶高通量筛选</text>
-                    <text class="service-desc">药物细胞活性研究</text>
-                    <text class="service-desc">抗体/酶功能表征</text>
-                    <text class="service-desc">抗原/抗体表达及纯化</text>
-                    <text class="service-desc">抗体/酶展示库构建与筛选</text>
+                <view v-if="item.content" class="service-content">
+                    <text class="service-desc">{{ item.content }}</text>
                 </view>
                 <view class="service-footer">
-                    <text
-                        class="service-detail"
-                        @click="handleDetailClick(serviceName)"
-                        >详情 →</text
-                    >
-                </view>
-            </view>
-
-            <view class="service-item">
-                <view class="service-header">
-                    <text class="service-title">药物评价平台(动物房)</text>
-                </view>
-                <view class="service-content">
-                    <text class="service-desc">小分子新药研发服务</text>
-                    <text class="service-desc">小分子新药临床前评价</text>
-                    <text class="service-desc">创新药物筛选评价</text>
-                    <text class="service-desc">药物安全性评价</text>
-                    <text class="service-desc">药物代谢动力学评价</text>
-                </view>
-                <view class="service-footer">
-                    <text
-                        class="service-detail"
-                        @click="handleDetailClick(serviceName)"
-                        >详情 →</text
-                    >
-                </view>
-            </view>
-
-            <view class="service-item">
-                <view class="service-header">
-                    <text class="service-title">大分子药物CDMO平台</text>
-                </view>
-                <view class="service-content">
-                    <text class="service-desc">无菌注射剂研发服务</text>
-                    <text class="service-desc">无菌注射剂生产服务</text>
-                    <text class="service-desc">无菌注射剂质量控制</text>
-                    <text class="service-desc">无菌注射剂注册申报</text>
-                </view>
-                <view class="service-footer">
-                    <text
-                        class="service-detail"
-                        @click="handleDetailClick(serviceName)"
-                        >详情 →</text
-                    >
-                </view>
-            </view>
-
-            <view class="service-item">
-                <view class="service-header">
-                    <text class="service-title">小分子API&制剂CDMO平台</text>
-                </view>
-                <view class="service-content">
-                    <text class="service-desc">小分子API研发服务</text>
-                    <text class="service-desc">小分子API生产服务</text>
-                    <text class="service-desc">小分子API质量控制</text>
-                    <text class="service-desc">小分子API注册申报</text>
-                </view>
-                <view class="service-footer">
-                    <text
-                        class="service-detail"
-                        @click="handleDetailClick(serviceName)"
-                        >详情 →</text
-                    >
-                </view>
-            </view>
-
-            <view class="service-item">
-                <view class="service-header">
-                    <text class="service-title">基因治疗CDMO平台</text>
-                </view>
-                <view class="service-content">
-                    <text class="service-desc">基因治疗载体研发</text>
-                    <text class="service-desc">基因治疗载体生产</text>
-                    <text class="service-desc">基因治疗载体质量控制</text>
-                    <text class="service-desc">基因治疗载体注册申报</text>
-                </view>
-                <view class="service-footer">
-                    <text
-                        class="service-detail"
-                        @click="handleDetailClick(serviceName)"
-                        >详情 →</text
-                    >
-                </view>
-            </view>
-
-            <view class="service-item">
-                <view class="service-header">
-                    <text class="service-title">细胞治疗CDMO平台</text>
-                </view>
-                <view class="service-content">
-                    <text class="service-desc">细胞治疗产品研发</text>
-                    <text class="service-desc">细胞治疗产品生产</text>
-                    <text class="service-desc">细胞治疗产品质量控制</text>
-                    <text class="service-desc">细胞治疗产品注册申报</text>
-                </view>
-                <view class="service-footer">
-                    <text
-                        class="service-detail"
-                        @click="handleDetailClick(serviceName)"
-                        >详情 →</text
-                    >
-                </view>
-            </view>
-
-            <view class="service-item">
-                <view class="service-header">
-                    <text class="service-title">临床CRO平台</text>
-                </view>
-                <view class="service-content">
-                    <text class="service-desc">抗体药物研发服务</text>
-                    <text class="service-desc">抗体药物生产服务</text>
-                    <text class="service-desc">抗体药物质量控制</text>
-                    <text class="service-desc">抗体药物注册申报</text>
-                </view>
-                <view class="service-footer">
-                    <text
-                        class="service-detail"
-                        @click="handleDetailClick(serviceName)"
-                        >详情 →</text
-                    >
+                    <text class="service-detail">详情 →</text>
                 </view>
             </view>
         </scroll-view>
 
-        <view v-else class="empty-content">
-            <text class="empty-title">暂无技术服务内容</text>
-            <text class="empty-desc">医工园发布服务目录后将在此展示，不展示生物园的专属服务内容。</text>
+        <view v-else-if="listState === 'loading'" class="empty-content">
+            <text class="empty-title">服务目录加载中...</text>
         </view>
 
-        <!-- 联系我们插件 -->
+        <view v-else-if="listState === 'error'" class="empty-content retry-content" @click="fetchList">
+            <text class="empty-title">服务目录加载失败，点击重试</text>
+        </view>
+
+        <view v-else class="empty-content">
+            <text class="empty-title">暂无技术服务内容</text>
+            <text class="empty-desc">{{ parkName }}发布服务目录后将在此展示，不展示其他园区的服务内容。</text>
+        </view>
+
         <view class="contact-plugin" @click="handleContactClick">
             <image
                 src="/pages_services/static/kefu.png"
@@ -166,36 +49,69 @@
 </template>
 
 <script>
-import { getCurrentPark } from '@/utils/parkContext';
+import { getPolicySupermarketList } from '@/api/operations/policySupermarket';
+import { getCurrentPark, getCurrentParkId } from '@/utils/parkContext';
 
 export default {
     data() {
         return {
-            isBioPark: true,
+            serviceList: [],
+            listState: 'loading',
             parkName: '当前园区',
+            loadedParkId: '',
         };
     },
     mounted() {
-        this.refreshParkContent();
+        this.fetchList();
     },
     onShow() {
-        this.refreshParkContent();
+        const currentParkId = getCurrentParkId();
+        this.parkName = getCurrentPark()?.parkName || '当前园区';
+        if (currentParkId !== this.loadedParkId) this.fetchList();
     },
     methods: {
-        refreshParkContent() {
-            const park = getCurrentPark();
-            this.parkName = park?.parkName || '当前园区';
-            this.isBioPark = String(park?.parkCode || '') === 'A'
-                || String(park?.tenantId || '') === '000000';
+        async fetchList() {
+            const expectedParkId = getCurrentParkId();
+            this.parkName = getCurrentPark()?.parkName || '当前园区';
+            this.listState = 'loading';
+            try {
+                const res = await getPolicySupermarketList(
+                    {
+                        policyType: 'technology',
+                        orderByColumn: 'createTime',
+                        isAsc: 'desc',
+                    },
+                    { showLoading: false },
+                );
+                if (expectedParkId !== getCurrentParkId()) return;
+                const rows = Array.isArray(res?.rows)
+                    ? res.rows
+                    : Array.isArray(res?.data)
+                      ? res.data
+                      : [];
+                this.serviceList = rows
+                    .map((item) => ({
+                        id: item.id || item.policyId || item.supermarketId,
+                        title: item.title || item.name || '未命名服务',
+                        content: item.content || item.policyContent || item.serviceContent || '',
+                    }))
+                    .filter((item) => item.id != null);
+                this.loadedParkId = expectedParkId;
+                this.listState = 'ready';
+            } catch (error) {
+                if (expectedParkId !== getCurrentParkId()) return;
+                this.serviceList = [];
+                this.listState = 'error';
+            }
         },
-        handleDetailClick(serviceName) {
+        handleDetailClick(item) {
             uni.navigateTo({
-                url: "/pages_services/technical/technicalList",
+                url: `/pages_services/technical/technicalDetails?id=${item.id}`,
             });
         },
         handleContactClick() {
             uni.navigateTo({
-                url: "/pages_services/consult?dictSort=0",
+                url: '/pages_services/consult?dictSort=0',
             });
         },
     },
@@ -216,168 +132,109 @@ export default {
 }
 
 .header-title {
-    width: 96px;
-    height: 36px;
-    font-family: "Source Han Sans", sans-serif;
+    display: block;
     font-weight: 700;
     font-size: 24px;
     color: rgba(0, 0, 0, 0.9);
     line-height: 36px;
-    text-align: center;
-    font-style: normal;
-    text-transform: none;
-    margin: 0 auto 8px;
-    display: block;
 }
 
-.header-subtitle {
-    font-family: "Han Sans-Regular", sans-serif;
-    font-size: 18px;
-    font-weight: 400;
-    color: #333333;
-    text-align: center;
-    letter-spacing: 5px;
-    line-height: 24px;
-    margin-bottom: 4px;
-    display: block;
-}
-
+.header-subtitle,
 .header-desc {
-    font-family: "Han Sans-Regular", sans-serif;
-    font-size: 18px;
-    font-weight: 400;
-    color: #666666;
-    text-align: center;
-    letter-spacing: 5px;
-    line-height: 24px;
     display: block;
+    color: #6d7782;
+    font-size: 13px;
+    line-height: 24px;
 }
 
 .content {
-    flex: 1;
-    overflow: hidden;
+    height: calc(100vh - 132px);
+    padding: 0 16px 32px;
+    box-sizing: border-box;
+}
+
+.service-item {
+    margin-bottom: 14px;
+    padding: 18px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.service-header {
+    display: flex;
+    align-items: center;
+}
+
+.service-title {
+    color: #20252b;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.service-content {
+    margin-top: 12px;
+}
+
+.service-desc {
+    color: #68727d;
+    font-size: 13px;
+    line-height: 22px;
+}
+
+.service-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
+.service-detail {
+    color: #3b63ff;
+    font-size: 13px;
 }
 
 .empty-content {
-    margin: 32rpx;
-    padding: 64rpx 40rpx;
-    border-radius: 12rpx;
-    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 260px;
+    padding: 24px;
     text-align: center;
 }
 
 .empty-title {
-    display: block;
-    color: #333333;
-    font-size: 32rpx;
-    font-weight: 600;
+    color: #7a8795;
+    font-size: 15px;
 }
 
 .empty-desc {
-    display: block;
-    margin-top: 20rpx;
-    color: #777777;
-    font-size: 28rpx;
-    line-height: 1.7;
+    margin-top: 10px;
+    color: #9aa4ad;
+    font-size: 12px;
 }
 
-.service-item {
-    background-color: #ffffff;
-    margin: 16px;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    padding: 16px;
-}
-
-.service-header {
-    width: 100%;
-    height: 48px;
-    background: #3b63ff;
-    border-radius: 10px;
-    padding: 0 16px;
-    display: flex;
-    align-items: center;
-    box-sizing: border-box;
-}
-
-.service-title {
-    font-family: "Source Han Sans-Bold", sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    color: #ffffff;
-    text-align: left;
-    line-height: 16px;
-}
-
-.service-content {
-    padding: 16px 0 0 0;
-}
-
-.service-desc {
-    display: block;
-    font-size: 14px;
-    color: #333333;
-    line-height: 24px;
-    position: relative;
-    padding-left: 16px;
+.retry-content .empty-title {
+    color: #3b63ff;
 }
 
 .contact-plugin {
     position: fixed;
-    bottom: 78%;
     right: 20px;
+    bottom: 78%;
+    z-index: 1000;
     width: 50px;
     height: 50px;
-    background-color: #3b63ff;
-    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    background-color: #3b63ff;
+    border-radius: 50%;
     box-shadow: 0 2px 8px rgba(59, 99, 255, 0.3);
-    z-index: 1000;
 }
 
 .contact-image {
     width: 32px;
     height: 32px;
-    object-fit: contain;
-}
-
-.service-desc::before {
-    content: "•";
-    color: #3b63ff;
-    font-weight: bold;
-    margin-right: 8px;
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-.service-footer {
-    padding: 0 16px 16px;
-    display: flex;
-    justify-content: flex-end;
-}
-
-.service-detail {
-    font-family: "Source Han Sans", sans-serif;
-    font-weight: 400;
-    font-size: 14px;
-    color: #ffffff;
-    line-height: 14px;
-    text-align: left;
-    font-style: normal;
-    text-transform: none;
-    width: 48px;
-    height: 32px;
-    padding: 0 16px;
-    border: 1px solid #3b63ff;
-    background-color: #3b63ff;
-    border-radius: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 </style>

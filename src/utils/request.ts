@@ -36,6 +36,12 @@ const request = <T>(config: RequestConfig):Promise<ResponseData<T>> => {
       } else if (config.data && typeof config.data === 'object' && !Array.isArray(config.data)) {
         config.data = { ...config.data, parkId: config.data.parkId || currentParkId }
       }
+      // Some uni-app APIs submit business parameters through `params` even for
+      // POST/PUT. Keep those requests scoped as well; the query string is
+      // appended below for every method.
+      if (config.params && typeof config.params === 'object' && !Array.isArray(config.params)) {
+        config.params = { ...config.params, parkId: config.params.parkId || currentParkId }
+      }
     }
   }
   // get请求映射params参数
@@ -73,10 +79,20 @@ const request = <T>(config: RequestConfig):Promise<ResponseData<T>> => {
       data: config.data,
       header: config.header,
       dataType: 'json'
-    }).then(response => {
+    }).then(rawResponse => {
       // 隐藏加载动画
       if (shouldShowLoading) {
         uni.hideLoading();
+      }
+
+      // Different uni runtimes return either a response object or a
+      // `[error, response]` tuple. Normalize it before touching headers/data.
+      const response = Array.isArray(rawResponse)
+        ? rawResponse[1]
+        : rawResponse
+      if (!response) {
+        throw (Array.isArray(rawResponse) && rawResponse[0])
+          || new Error('后端接口连接异常')
       }
       
       if (appEncrypt) {
@@ -105,7 +121,7 @@ const request = <T>(config: RequestConfig):Promise<ResponseData<T>> => {
 
 
       const res = response
-      const data: ResponseData<T> = res.data as ResponseData<T>
+      const data: ResponseData<T> = (res.data || {}) as ResponseData<T>
       const code = data.code || 200
       // @ts-ignore
       const msg:string = errorCode[code] || data.msg || errorCode['default']

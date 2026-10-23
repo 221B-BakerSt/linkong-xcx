@@ -159,7 +159,7 @@ export default {
                     policyType: 'policy',
                     orderByColumn: 'createTime',
                     isAsc: 'desc',
-                });
+                }, { showLoading: false });
                 if (expectedParkId !== getCurrentParkId()) return;
                 this.policyList = Array.isArray(res?.rows)
                     ? res.rows

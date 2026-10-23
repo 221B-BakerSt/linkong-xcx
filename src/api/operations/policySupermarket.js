@@ -4,11 +4,12 @@ import request from '@/utils/request'
  * 查询政策超市列表
  * @param {Object} params 查询参数
  */
-export function getPolicySupermarketList(params) {
+export function getPolicySupermarketList(params, options = {}) {
   return request({
     url: '/operations/policySupermarket/list',
     method: 'GET',
-    params
+    params,
+    ...options
   })
 }
 
@@ -27,11 +28,12 @@ export function getPolicySupermarketDetail(id) {
  * 查询服务机构列表
  * @param {Object} params 查询参数
  */
-export function getServiceOrganizationList(params) {
+export function getServiceOrganizationList(params, options = {}) {
   return request({
     url: '/operations/organizationServe/list',
     method: 'GET',
-    params
+    params,
+    ...options
   })
 }
 

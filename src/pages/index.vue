@@ -69,7 +69,8 @@
           <view class="notice-title">通知<text class="notice-title-bold">公告</text></view>
           <up-line direction="col" length="40rpx"></up-line>
           <view class="notice-scroll">
-            <view v-if="homeLoadState.notice === 'error'" class="empty-message retry-message" @click="loadHomeData()">公告加载失败，点击重试</view>
+            <view v-if="homeLoadState.notice === 'loading'" class="empty-message">公告加载中...</view>
+            <view v-else-if="homeLoadState.notice === 'error'" class="empty-message retry-message" @click="loadHomeData()">公告加载失败，点击重试</view>
             <view v-else-if="noticeList.length === 0" class="empty-message">暂无新消息</view>
             <view v-else v-for="(notice, index) in noticeList" :key="notice.id" class="notice-item" @click="toDetails(notice,'notice')"
               :style="{ transform: `translateY(-${currentIndex * 100}%)` }">
@@ -95,7 +96,8 @@
       <view class="tab-content" @touchstart="touchStart" @touchend="touchEnd">
         <!-- 园企资讯 -->
         <view v-if="activeTab === 1" class="tab-pane">
-          <view v-if="homeLoadState.info === 'error'" class="empty-message retry-message" @click="loadHomeData()">资讯加载失败，点击重试</view>
+          <view v-if="homeLoadState.info === 'loading'" class="empty-message">资讯加载中...</view>
+          <view v-else-if="homeLoadState.info === 'error'" class="empty-message retry-message" @click="loadHomeData()">资讯加载失败，点击重试</view>
           <view v-else-if="tabData[1].length === 0" class="empty-message">暂无新消息</view>
           <view v-else v-for="item in tabData[1]" :key="item.id" class="news-item" @click="toDetails(item,'zixun')">
             <view class="news-image">
@@ -110,7 +112,8 @@
 
         <!-- 园企招聘 -->
         <view v-if="activeTab === 2" class="tab-pane2">
-          <view v-if="homeLoadState.recruit === 'error'" class="empty-message retry-message" @click="loadHomeData()">招聘加载失败，点击重试</view>
+          <view v-if="homeLoadState.recruit === 'loading'" class="empty-message">招聘加载中...</view>
+          <view v-else-if="homeLoadState.recruit === 'error'" class="empty-message retry-message" @click="loadHomeData()">招聘加载失败，点击重试</view>
           <view v-else-if="tabData[2].length === 0" class="empty-message">暂无新消息</view>
           <view v-else v-for="item in tabData[2]" :key="item.id" class="news-item" @click="toDetails(item,'zhaoPin')">
             <view class="news-title">{{ item.title }}</view>
@@ -120,7 +123,8 @@
 
         <!-- 明星企业 -->
         <view v-if="activeTab === 3" class="tab-pane3">
-          <view v-if="homeLoadState.enterprise === 'error'" class="empty-message retry-message" @click="loadHomeData()">企业列表加载失败，点击重试</view>
+          <view v-if="homeLoadState.enterprise === 'loading'" class="empty-message">企业列表加载中...</view>
+          <view v-else-if="homeLoadState.enterprise === 'error'" class="empty-message retry-message" @click="loadHomeData()">企业列表加载失败，点击重试</view>
           <view v-else-if="tabData[3].length === 0" class="empty-message">暂无新消息</view>
           <view v-else v-for="item in tabData[3]" :key="item.id" class="news-item" @click="toDetails(item,'star')">
             <view class="news-image">
@@ -143,6 +147,7 @@ import { onShow } from '@dcloudio/uni-app'
 
 import { getNoticeList, getStarEnterpriseList, getParkRecruitList, getParkInfoList, getCarouselList } from '@/api/park/park'
 import { getCurrentPark, getCurrentParkId } from '@/utils/parkContext'
+import { getMediaUrl } from '@/utils/media'
 const headerHeight = wx.getMenuButtonBoundingClientRect();
 import homeImg from '@/static/images/icon/home/1.png'
 
@@ -156,13 +161,14 @@ const communityBtn = () => {
 }
 let loadedParkId = ''
 let homeRefreshToken = 0
-let noticeTimer = null
 const SHARED_HOME_BANNER_URL = 'https://linkong.yunlf.cn/linkong/2026/04/20/a4cbca1dabd642868d75f7045dfbd85f.png'
+let noticeTimer = null
+const silentRequest = { showLoading: false }
 const homeLoadState = ref({
-  notice: 'ready',
-  info: 'ready',
-  recruit: 'ready',
-  enterprise: 'ready'
+  notice: 'loading',
+  info: 'loading',
+  recruit: 'loading',
+  enterprise: 'loading'
 })
 
 onShow(() => {
@@ -173,7 +179,10 @@ onShow(() => {
   }
 })
 //轮播图
-const carouselList = ref([])
+const carouselList = ref([{
+  image: SHARED_HOME_BANNER_URL,
+  title: '临空智慧园区'
+}])
 
 function useSharedHomeBanner() {
   carouselList.value = [{
@@ -190,10 +199,10 @@ const currentIndex = ref(0);
 // 获取轮播
 async function getCarouselListApi(expectedParkId) {
   try {
-    const res = await getCarouselList()
-    if (getCurrentParkId() === expectedParkId && res && res.rows) {
+    const res = await getCarouselList(undefined, silentRequest)
+    if (getCurrentParkId() === expectedParkId && res && Array.isArray(res.rows)) {
       const banners = res.rows.map(item => ({
-        image: item.ossUrls || '',
+        image: getMediaUrl(item.ossUrls, homeImg),
         title: item.createTime || ''
       })).filter(item => item.image)
       carouselList.value = banners.length > 0 ? banners : []
@@ -207,15 +216,15 @@ async function getCarouselListApi(expectedParkId) {
 // 获取通知公告列表
 const getNoticeListApi = async (expectedParkId) => {
   try {
-    const res = await getNoticeList()
-    if (getCurrentParkId() === expectedParkId && res && res.rows) {
+    const res = await getNoticeList(undefined, silentRequest)
+    if (getCurrentParkId() === expectedParkId && res && Array.isArray(res.rows)) {
       noticeList.value = res.rows.map(item => ({
         id: item.noticeId,
         content: item.noticeTitle,
         date: formatTime(item.createTime)
       }))
-      homeLoadState.value.notice = 'ready'
     }
+    if (getCurrentParkId() === expectedParkId) homeLoadState.value.notice = 'ready'
   } catch (e) {
     console.error('获取公告列表失败:', e)
     if (getCurrentParkId() === expectedParkId) homeLoadState.value.notice = 'error'
@@ -229,17 +238,18 @@ const getStarEnterpriseListApi = async (expectedParkId) => {
       {
         orderByColumn: 'createTime',
         isAsc: 'desc',
-      }
+      },
+      silentRequest
     )
-    if (getCurrentParkId() === expectedParkId && res && res.rows) {
+    if (getCurrentParkId() === expectedParkId && res && Array.isArray(res.rows)) {
       tabData.value[3] = res.rows.map(item => ({
         id: item.starEnterpriseId,
-        logoOssUrls: item.logoOssUrls || '',
+        logoOssUrls: getMediaUrl(item.logoOssUrls, homeImg),
         title: item.starEnterpriseName,
         content: item.starEnterpriseProfile || ''
       }))
-      homeLoadState.value.enterprise = 'ready'
     }
+    if (getCurrentParkId() === expectedParkId) homeLoadState.value.enterprise = 'ready'
   } catch (e) {
     console.error('获取明星企业列表失败:', e)
     if (getCurrentParkId() === expectedParkId) homeLoadState.value.enterprise = 'error'
@@ -253,16 +263,17 @@ const getParkRecruitListApi = async (expectedParkId) => {
       {
         orderByColumn: 'createTime',
         isAsc: 'desc',
-      }
+      },
+      silentRequest
     )
-    if (getCurrentParkId() === expectedParkId && res && res.rows) {
+    if (getCurrentParkId() === expectedParkId && res && Array.isArray(res.rows)) {
       tabData.value[2] = res.rows.map(item => ({
         id: item.recruitId,
         title: item.title || '',
         date: formatTime(item.createTime)
       }))
-      homeLoadState.value.recruit = 'ready'
     }
+    if (getCurrentParkId() === expectedParkId) homeLoadState.value.recruit = 'ready'
   } catch (e) {
     console.error('获取园区招聘列表失败:', e)
     if (getCurrentParkId() === expectedParkId) homeLoadState.value.recruit = 'error'
@@ -290,17 +301,18 @@ const getParkInfoListApi = async (expectedParkId) => {
       {
         orderByColumn: 'createTime',
         isAsc: 'desc',
-      }
+      },
+      silentRequest
     )
-    if (getCurrentParkId() === expectedParkId && res && res.rows) {
+    if (getCurrentParkId() === expectedParkId && res && Array.isArray(res.rows)) {
       tabData.value[1] = res.rows.map(item => ({
         id: item.infoId,
-        image: item.infoCoverUrl || '',
+        image: getMediaUrl(item.infoCoverUrl, homeImg),
         title: item.infoName || '',
         date: formatTime(item.createTime)
       }))
-      homeLoadState.value.info = 'ready'
     }
+    if (getCurrentParkId() === expectedParkId) homeLoadState.value.info = 'ready'
   } catch (e) {
     console.error('获取园区资讯列表失败:', e)
     if (getCurrentParkId() === expectedParkId) homeLoadState.value.info = 'error'
@@ -308,13 +320,17 @@ const getParkInfoListApi = async (expectedParkId) => {
 }
 
 const loadHomeData = async (parkId = getCurrentParkId()) => {
-  if (!parkId) return
+  if (!parkId) {
+    useSharedHomeBanner()
+    homeLoadState.value = { notice: 'ready', info: 'ready', recruit: 'ready', enterprise: 'ready' }
+    return
+  }
   const refreshToken = ++homeRefreshToken
   loadedParkId = parkId
   useSharedHomeBanner()
   noticeList.value = []
   tabData.value = { 1: [], 2: [], 3: [] }
-  homeLoadState.value = { notice: 'ready', info: 'ready', recruit: 'ready', enterprise: 'ready' }
+  homeLoadState.value = { notice: 'loading', info: 'loading', recruit: 'loading', enterprise: 'loading' }
   currentIndex.value = 0
 
   await Promise.allSettled([

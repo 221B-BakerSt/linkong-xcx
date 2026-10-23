@@ -78,7 +78,7 @@ export default {
                     policyType: "governmentAffairs",
                     orderByColumn: 'createTime',
                     isAsc: 'desc',
-                });
+                }, { showLoading: false });
                 if (expectedParkId !== getCurrentParkId()) return;
                 this.institutionList = Array.isArray(res?.rows)
                     ? res.rows

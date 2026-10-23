@@ -176,11 +176,12 @@ export function getParkPrintshopDetail(printshopId) {
 /**
  * 查询通知公告列表
  */
-export function getNoticeList(params) {
+export function getNoticeList(params, options = {}) {
     return request({
         url: "/system/notice/list",
         method: "get",
         params,
+        ...options,
     });
 }
 
@@ -194,30 +195,33 @@ export function getNoticeDetail(noticeId) {
     });
 }
 
-export function getStarEnterpriseList(params) {
+export function getStarEnterpriseList(params, options = {}) {
     return request({
         url: "/operations/enterprise/list",
         method: "get",
         params,
+        ...options,
     });
 }
 
-export function getParkRecruitList(params) {
+export function getParkRecruitList(params, options = {}) {
     return request({
         url: "/operations/parkRecruit/list",
         method: "get",
         params,
+        ...options,
     });
 }
 
 /**
  * 查询园区资讯列表
  */
-export function getParkInfoList(params) {
+export function getParkInfoList(params, options = {}) {
     return request({
         url: "/operations/parkInfo/list",
         method: "get",
         params,
+        ...options,
     });
 }
 
@@ -380,9 +384,11 @@ export function addHouseReserve(data) {
   });
 }
 // 轮播图
-export function getCarouselList() {
+export function getCarouselList(params, options = {}) {
   return request({
     url: '/operations/parkBanner/list',
-    method: 'GET',
+        method: 'GET',
+        params,
+        ...options,
   });
 }
