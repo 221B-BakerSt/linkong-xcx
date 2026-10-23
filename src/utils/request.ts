@@ -19,6 +19,13 @@ let isLoginExpiredModalShow = false;
 
 const request = <T>(config: RequestConfig):Promise<ResponseData<T>> => {
   const shouldShowLoading = config.showLoading !== false
+  let loadingHidden = false
+  const hideRequestLoading = () => {
+    if (shouldShowLoading && !loadingHidden) {
+      uni.hideLoading()
+      loadingHidden = true
+    }
+  }
   // 是否需要设置 token
   const isToken = (config.headers || {}).isToken === false
   config.header = config.header || {}
@@ -81,9 +88,7 @@ const request = <T>(config: RequestConfig):Promise<ResponseData<T>> => {
       dataType: 'json'
     }).then(rawResponse => {
       // 隐藏加载动画
-      if (shouldShowLoading) {
-        uni.hideLoading();
-      }
+      hideRequestLoading()
 
       // Different uni runtimes return either a response object or a
       // `[error, response]` tuple. Normalize it before touching headers/data.
@@ -152,9 +157,7 @@ const request = <T>(config: RequestConfig):Promise<ResponseData<T>> => {
     })
       .catch(error => {
         // 隐藏加载动画
-        if (shouldShowLoading) {
-          uni.hideLoading();
-        }
+        hideRequestLoading()
 
         // uni.request 的失败对象在不同端字段不完全一致，不能直接解构后调用 includes。
         const rawMessage = error && typeof error === 'object'
