@@ -184,13 +184,13 @@ onShow(() => {
 //轮播图
 const carouselList = ref([{
   image: SHARED_HOME_BANNER_URL,
-  title: '临空智慧园区'
+  title: '生物园智慧园区'
 }])
 
 function useSharedHomeBanner() {
   carouselList.value = [{
     image: SHARED_HOME_BANNER_URL,
-    title: '临空智慧园区'
+    title: '生物园智慧园区'
   }]
 }
 

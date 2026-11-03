@@ -275,8 +275,9 @@ import {
     buildUploadedFile,
     getRoleFlags,
 } from "./utils";
+import { getCurrentParkId } from "@/utils/parkContext";
 
-const roleFlags = getRoleFlags();
+const roleFlags = reactive(getRoleFlags());
 const workOrderId = ref("");
 const detail = ref(null);
 const currentAction = ref("");
@@ -375,9 +376,19 @@ const loadDetail = async () => {
     }
 };
 
+const syncRoleType = async () => {
+    try {
+        const res = await workOrderApi.overview();
+        Object.assign(roleFlags, getRoleFlags(res.data?.roleType));
+    } catch (error) {
+        Object.assign(roleFlags, getRoleFlags());
+    }
+};
+
 const loadWorkers = async () => {
     try {
-        const res = await workOrderApi.workers();
+        const parkId = detail.value?.parkId || getCurrentParkId();
+        const res = await workOrderApi.workers(parkId ? { parkId } : {});
         workerOptions.value = (res.data || []).map((item) => ({
             ...item,
             displayName: `${item.nickName || item.userName}${item.phonenumber ? `（${item.phonenumber}）` : ""}`,
@@ -722,7 +733,7 @@ onLoad((options) => {
 });
 
 onShow(() => {
-    loadDetail();
+    syncRoleType().then(loadDetail);
 });
 
 onUnload(() => {

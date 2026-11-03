@@ -96,7 +96,7 @@ import config from "@/config.js";
 import modal from "@/plugins/modal";
 import store from "@/store";
 import { getCurrentParkScope } from "@/api/system/park";
-import { setCurrentPark } from "@/utils/parkContext";
+import { displayTenantName, setCurrentPark } from "@/utils/parkContext";
 
 const codeUrl = ref("");
 const captchaEnabled = ref(true);
@@ -128,7 +128,7 @@ function getTenant() {
     const list = res.data?.voList || [];
     tenantList.value = list.map((item) => ({
       value: item.tenantId,
-      text: item.companyName,
+      text: displayTenantName(item.companyName),
     }));
   });
 }

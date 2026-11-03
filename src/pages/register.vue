@@ -100,10 +100,11 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { getCodeImg, getTenantList, register } from "@/api/login";
 import config from "@/config.js";
 import modal from "@/plugins/modal";
+import { displayTenantName } from "@/utils/parkContext";
 
 const codeUrl = ref("");
 const captchaEnabled = ref(true);
@@ -112,6 +113,7 @@ const tenantList = ref([]);
 
 const registerForm = ref({
   tenantId: "",
+  deptId: null,
   username: "",
   password: "",
   confirmPassword: "",
@@ -136,17 +138,33 @@ function getCode() {
 
 function getTenant() {
   getTenantList().then((res) => {
-    const list = res.data?.voList || [];
+    const list = (res.data?.voList || []).filter(
+      (item) => !item.loginOnly && item.deptId != null,
+    );
     tenantList.value = list.map((item) => ({
       value: item.tenantId,
-      text: item.companyName,
+      text: displayTenantName(item.companyName),
+      deptId: item.deptId,
     }));
+    if (tenantList.value.length && !registerForm.value.tenantId) {
+      registerForm.value.tenantId = tenantList.value[0].value;
+    }
   });
 }
+
+watch(
+  () => registerForm.value.tenantId,
+  (tenantId) => {
+    registerForm.value.deptId =
+      tenantList.value.find((item) => item.value === tenantId)?.deptId || null;
+  },
+);
 
 async function handleRegister() {
   if (registerForm.value.tenantId === "") {
     modal.msgError("请选择园区");
+  } else if (!registerForm.value.deptId) {
+    modal.msgError("当前园区未配置注册部门，请联系管理员");
   } else if (registerForm.value.username === "") {
     modal.msgError("请输入账号");
   } else if (registerForm.value.password === "") {
@@ -182,7 +200,7 @@ async function doRegister() {
     }
   } catch (error) {
     modal.closeLoading();
-    modal.msgError("网络错误，请稍后重试");
+    modal.msgError(error && typeof error === "object" ? error.msg || "注册失败，请稍后重试" : "注册失败，请稍后重试");
     if (captchaEnabled.value) {
       getCode();
     }

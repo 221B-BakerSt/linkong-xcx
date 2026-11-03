@@ -722,6 +722,20 @@
           }
         },
         {
+          "path": "medicalAppointment/index",
+          "style": {
+            "navigationBarTitleText": "诊疗预约",
+            "enablePullDownRefresh": true
+          }
+        },
+        {
+          "path": "medicalAppointment/records",
+          "style": {
+            "navigationBarTitleText": "诊疗预约记录",
+            "enablePullDownRefresh": true
+          }
+        },
+        {
           "path": "pwd/index",
           "style": {
             "navigationBarTitleText": "修改密码"

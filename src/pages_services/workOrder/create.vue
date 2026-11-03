@@ -133,7 +133,7 @@ import {
     previewAttachment,
 } from "./utils";
 
-const roleFlags = getRoleFlags();
+const roleFlags = reactive(getRoleFlags());
 const form = reactive({
     workOrderId: "",
     title: "",
@@ -434,8 +434,18 @@ const initPage = async (options) => {
     });
 };
 
-onLoad((options) => {
-    initPage(options || {});
+const syncRoleType = async () => {
+    try {
+        const res = await workOrderApi.overview();
+        Object.assign(roleFlags, getRoleFlags(res.data?.roleType));
+    } catch (error) {
+        Object.assign(roleFlags, getRoleFlags());
+    }
+};
+
+onLoad(async (options) => {
+    await syncRoleType();
+    await initPage(options || {});
 });
 
 onUnload(() => {

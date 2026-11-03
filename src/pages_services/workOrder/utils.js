@@ -27,14 +27,19 @@ export const PRIORITY_LABEL_MAP = {
     urgent: "紧急",
 };
 
-export function getRoleFlags() {
+export function getRoleFlags(roleType = "") {
     const roles = store.state.user.roles || [];
     const managerKeys = [
         "superadmin",
         "work_order_admin",
     ];
-    const isManager = roles.some((item) => managerKeys.includes(item));
-    const isWorker = roles.includes("work_order_worker");
+    // 以后端工单概览返回的角色类型为准，避免普通园区 manager 被误判为工单管理员。
+    const isManager = roleType
+        ? roleType === "manager"
+        : roles.some((item) => managerKeys.includes(item));
+    const isWorker = roleType
+        ? roleType === "worker"
+        : roles.includes("work_order_worker");
     return {
         roles,
         isManager,

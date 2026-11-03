@@ -31,10 +31,11 @@ export const workOrderApi = {
         });
     },
 
-    workers() {
+    workers(params = {}) {
         return request({
             url: "/operations/workOrder/workers",
             method: "get",
+            params,
         });
     },
 

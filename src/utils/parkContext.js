@@ -1,8 +1,17 @@
 const CURRENT_PARK_KEY = 'CurrentPark'
 const TENANT_ID_KEY = 'TenantId'
 
+export function displayTenantName(name) {
+  const normalized = String(name || '').trim()
+  if (normalized === '临空生物园') return '生物园A区'
+  if (normalized === '临空医工园') return '生物园C区'
+  if (normalized === '集团') return '在管项目概览'
+  return normalized
+}
+
 export function getCurrentPark() {
-  return uni.getStorageSync(CURRENT_PARK_KEY) || null
+  const park = uni.getStorageSync(CURRENT_PARK_KEY) || null
+  return park ? { ...park, parkName: displayTenantName(park.parkName) } : null
 }
 
 export function getCurrentParkId() {

@@ -5,6 +5,7 @@
             <view class="hero-desc">
                 提报、派单、处理、结单全流程线上协同。
             </view>
+            <view v-if="currentPark.parkName" class="park-context">当前园区：{{ currentPark.parkName }}</view>
         </view>
 
         <view class="stats-grid">
@@ -43,9 +44,11 @@ import { computed, reactive } from "vue";
 import { onShow } from "@dcloudio/uni-app";
 import { workOrderApi } from "@/api/operations/workOrder";
 import { getRoleFlags } from "./utils";
+import { getCurrentPark } from "@/utils/parkContext";
 
 const roleFlags = reactive(getRoleFlags());
 const overview = reactive({});
+const currentPark = reactive(getCurrentPark() || {});
 
 const totalLabel = computed(() => (roleFlags.isManager ? "全部工单" : "我的工单"));
 const isApplicantOnly = computed(() => roleFlags.isApplicant);
@@ -268,6 +271,7 @@ const fetchOverview = async () => {
     try {
         const res = await workOrderApi.overview();
         Object.assign(overview, res.data || {});
+        Object.assign(roleFlags, getRoleFlags(res.data?.roleType));
     } catch (error) {
         Object.assign(overview, {});
     }
@@ -280,7 +284,8 @@ const handleAction = (item) => {
 };
 
 onShow(() => {
-    Object.assign(roleFlags, getRoleFlags());
+    Object.assign(currentPark, getCurrentPark() || {});
+    Object.assign(roleFlags, getRoleFlags(overview.roleType || ""));
     fetchOverview();
 });
 </script>
@@ -315,6 +320,16 @@ onShow(() => {
     font-size: 24rpx;
     line-height: 1.7;
     color: rgba(255, 255, 255, 0.88);
+}
+
+.park-context {
+    display: inline-block;
+    margin-top: 18rpx;
+    padding: 8rpx 16rpx;
+    border-radius: 999rpx;
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    font-size: 22rpx;
 }
 
 .stats-grid {

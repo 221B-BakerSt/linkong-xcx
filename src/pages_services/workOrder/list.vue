@@ -126,9 +126,10 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { reactive, ref } from "vue";
 import {
     onLoad,
+    onShow,
     onPullDownRefresh,
     onReachBottom,
 } from "@dcloudio/uni-app";
@@ -141,8 +142,9 @@ import {
     formatTime,
     getRoleFlags,
 } from "./utils";
+import { getCurrentParkId } from "@/utils/parkContext";
 
-const roleFlags = getRoleFlags();
+const roleFlags = reactive(getRoleFlags());
 const statusOptions = STATUS_OPTIONS;
 const list = ref([]);
 const loading = ref(false);
@@ -159,6 +161,7 @@ const selectedWorkerId = ref("");
 const selectedWorkerLabel = ref("");
 const batchRemark = ref("");
 const batchSubmitting = ref(false);
+const pageParkId = ref("");
 
 const confirmAction = (content) =>
     new Promise((resolve) => {
@@ -219,10 +222,10 @@ const fetchList = async (reset = false) => {
     }
 };
 
-const loadWorkers = async () => {
+const loadWorkers = async (parkId = getCurrentParkId()) => {
     if (!roleFlags.isManager) return;
     try {
-        const res = await workOrderApi.workers();
+        const res = await workOrderApi.workers(parkId ? { parkId } : {});
         workerOptions.value = (res.data || []).map((item) => ({
             ...item,
             displayName: `${item.nickName || item.userName}${item.phonenumber ? `（${item.phonenumber}）` : ""}`,
@@ -234,6 +237,25 @@ const loadWorkers = async () => {
             icon: "none",
         });
     }
+};
+
+const syncRoleAndPark = async () => {
+    try {
+        const res = await workOrderApi.overview();
+        Object.assign(roleFlags, getRoleFlags(res.data?.roleType));
+    } catch (error) {
+        Object.assign(roleFlags, getRoleFlags());
+    }
+    const currentParkId = getCurrentParkId();
+    if (pageParkId.value && pageParkId.value !== currentParkId) {
+        selectedIds.value = [];
+        selectedWorkerId.value = "";
+        selectedWorkerLabel.value = "";
+        workerOptions.value = [];
+        list.value = [];
+        finished.value = false;
+    }
+    pageParkId.value = currentParkId;
 };
 
 const switchStatus = (status) => {
@@ -318,6 +340,21 @@ const submitBatchTransfer = async () => {
         });
         return;
     }
+    const selectedParkIds = Array.from(
+        new Set(
+            list.value
+                .filter((item) => selectedIds.value.includes(item.workOrderId))
+                .map((item) => String(item.parkId || ""))
+                .filter(Boolean)
+        )
+    );
+    if (selectedParkIds.length > 1) {
+        uni.showToast({
+            title: "批量转派只能选择同一园区的工单",
+            icon: "none",
+        });
+        return;
+    }
     const confirmed = await confirmAction("确认将选中的工单批量转派给该维修人员吗？");
     if (!confirmed) return;
     batchSubmitting.value = true;
@@ -353,17 +390,22 @@ onLoad((options) => {
             title: options.label,
         });
     }
-    if (batchMode.value && !roleFlags.isManager) {
-        uni.showToast({
-            title: "当前账号无权批量转派",
-            icon: "none",
-        });
-        return;
-    }
-    if (batchMode.value) {
-        loadWorkers();
-    }
-    fetchList(true);
+});
+
+onShow(() => {
+    syncRoleAndPark().then(() => {
+        if (batchMode.value && !roleFlags.isManager) {
+            uni.showToast({
+                title: "当前账号无权批量转派",
+                icon: "none",
+            });
+            return;
+        }
+        if (batchMode.value && roleFlags.isManager) {
+            loadWorkers(getCurrentParkId());
+        }
+        fetchList(true);
+    });
 });
 
 onPullDownRefresh(() => {

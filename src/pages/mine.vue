@@ -47,6 +47,11 @@
 					<image src="../../static/images/icon/mine/6.png" style="width: 24px; height: 24px;"></image>
 				</template>
 			</u-cell>
+			<u-cell title="诊疗预约" isLink @click="navigateTo('/pages_mine/pages/medicalAppointment/index')">
+				<template #icon>
+					<image src="../../static/images/icon/mine/6.png" style="width: 24px; height: 24px;"></image>
+				</template>
+			</u-cell>
 			
       <u-cell title="退出登录" isLink @click="logout">
 				<template #icon>
