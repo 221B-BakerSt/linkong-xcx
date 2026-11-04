@@ -9,7 +9,7 @@
       <picker mode="date" :value="filterDate" @change="changeDate">
         <view class="filter-row"><text>就诊日期</text><text>{{ filterDate || '全部日期' }}　›</text></view>
       </picker>
-      <view class="filter-row" @click="clearDate"><text>日期范围</text><text>查看全部日期</text></view>
+      <view v-if="filterDate" class="filter-row" @click="clearDate"><text>日期范围</text><text>查看全部日期</text></view>
       <picker :range="roomOptions" range-key="roomName" @change="changeRoom">
         <view class="filter-row"><text>诊疗室</text><text>{{ selectedRoomName }}　›</text></view>
       </picker>
@@ -31,7 +31,10 @@
       </button>
     </view>
     <view v-if="loading" class="load-state">正在加载...</view>
-    <view v-else-if="records.length && hasMore" class="load-state" @click="loadMore">加载更多</view>
+    <view v-else-if="records.length" class="load-state">
+      已显示 {{ records.length }} / {{ total }} 条
+      <text v-if="hasMore" class="more-link" @click="loadMore">　加载更多 ›</text>
+    </view>
   </view>
 </template>
 
@@ -46,18 +49,14 @@ const cancellingId = ref(null);
 const currentTime = ref(Date.now());
 const canManage = ref(false);
 const tab = ref('mine');
-const filterDate = ref(today());
+const filterDate = ref('');
 const selectedRoomId = ref(null);
 const roomOptions = ref([{ medicalRoomId: null, roomName: '全部诊疗室' }]);
 const selectedRoomName = computed(() => roomOptions.value.find(room => String(room.medicalRoomId) === String(selectedRoomId.value))?.roomName || (selectedRoomId.value ? '当前诊疗室' : '全部诊疗室'));
 const pageNum = ref(1);
 const hasMore = ref(false);
+const total = ref(0);
 let clockTimer;
-
-function today() {
-  const date = new Date();
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-}
 
 function slotEndTime(item) {
   const date = String(item.bookingDate || '').match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
@@ -76,7 +75,7 @@ async function loadMore() {
   if (loading.value || (pageNum.value > 1 && !hasMore.value)) return;
   loading.value = true;
   try {
-    const params = { pageNum: pageNum.value, pageSize: 20 };
+    const params = { pageNum: pageNum.value, pageSize: 50 };
     if (tab.value === 'managed') {
       if (filterDate.value) params.bookingDate = filterDate.value;
       if (selectedRoomId.value) params.medicalRoomId = selectedRoomId.value;
@@ -86,7 +85,8 @@ async function loadMore() {
       : await medicalAppointmentApi.getMyAppointments(params);
     const rows = res.rows || res.data?.rows || [];
     records.value = pageNum.value === 1 ? rows : [...records.value, ...rows];
-    hasMore.value = records.value.length < Number(res.total ?? res.data?.total ?? rows.length);
+    total.value = Number(res.total ?? res.data?.total ?? rows.length);
+    hasMore.value = records.value.length < total.value;
     pageNum.value += 1;
   } catch (error) {
     uni.showToast({ title: error?.msg || '记录加载失败', icon: 'none' });
@@ -99,6 +99,7 @@ async function loadMore() {
 function reload() {
   pageNum.value = 1;
   hasMore.value = false;
+  total.value = 0;
   records.value = [];
   return loadMore();
 }
@@ -188,4 +189,5 @@ onUnload(stopClock);
 .detail-link { margin-top: 20rpx; color: #16806f; font-size: 24rpx; text-align: right; }
 .cancel-btn { width: 160rpx; height: 62rpx; margin: 22rpx 0 0 auto; color: #b85e55; background: #fff3f1; border: 0; border-radius: 10rpx; font-size: 24rpx; line-height: 62rpx; }
 .empty, .load-state { padding: 50rpx 0; color: #a3acad; text-align: center; font-size: 27rpx; }
+.more-link { color: #16806f; }
 </style>

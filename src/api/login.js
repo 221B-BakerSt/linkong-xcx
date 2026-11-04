@@ -69,6 +69,7 @@ export function logout() {
 export function getCodeImg() {
   return request({
     url: '/auth/code',
+    showLoading: false,
     headers: {
       isToken: false
     },

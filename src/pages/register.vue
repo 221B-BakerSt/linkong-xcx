@@ -85,6 +85,7 @@
       <view class="action-btn">
         <button
           @click="handleRegister"
+          :disabled="submitting || captchaLoading"
           class="login-btn"
           style="background-color: #4d69cc; color: #fff"
         >
@@ -110,6 +111,8 @@ const codeUrl = ref("");
 const captchaEnabled = ref(true);
 const globalConfig = ref(config);
 const tenantList = ref([]);
+const submitting = ref(false);
+const captchaLoading = ref(false);
 
 const registerForm = ref({
   tenantId: "",
@@ -121,11 +124,13 @@ const registerForm = ref({
   uuid: "",
   grantType: "password",
   userType: "sys_user",
-  clientId: "e5cd7e4891bf95d1d19206ce24a7b32e",
+  clientId: config.clientID,
 });
 
-function getCode() {
-  getCodeImg().then((res) => {
+async function getCode() {
+  captchaLoading.value = true;
+  try {
+    const res = await getCodeImg();
     const { data } = res;
     captchaEnabled.value =
       data.captchaEnabled === undefined ? true : data.captchaEnabled;
@@ -133,7 +138,11 @@ function getCode() {
       codeUrl.value = "data:image/gif;base64," + data.img;
       registerForm.value.uuid = data.uuid;
     }
-  });
+  } catch (error) {
+    modal.msgError(error?.msg || "验证码加载失败，请点击图片重试");
+  } finally {
+    captchaLoading.value = false;
+  }
 }
 
 function getTenant() {
@@ -148,6 +157,7 @@ function getTenant() {
     }));
     if (tenantList.value.length && !registerForm.value.tenantId) {
       registerForm.value.tenantId = tenantList.value[0].value;
+      registerForm.value.deptId = tenantList.value[0].deptId;
     }
   });
 }
@@ -161,6 +171,7 @@ watch(
 );
 
 async function handleRegister() {
+  if (submitting.value || captchaLoading.value) return;
   if (registerForm.value.tenantId === "") {
     modal.msgError("请选择园区");
   } else if (!registerForm.value.deptId) {
@@ -176,8 +187,13 @@ async function handleRegister() {
   } else if (registerForm.value.code === "" && captchaEnabled.value) {
     modal.msgError("请输入验证码");
   } else {
+    submitting.value = true;
     modal.loading("注册中，请耐心等待...");
-    await doRegister();
+    try {
+      await doRegister();
+    } finally {
+      submitting.value = false;
+    }
   }
 }
 
@@ -193,17 +209,21 @@ async function doRegister() {
         });
       }, 1000);
     } else {
-      modal.msgError(res.msg || "注册失败");
-      if (captchaEnabled.value) {
-        getCode();
+      const message = res.msg || "注册失败";
+      if (captchaEnabled.value && message.includes("验证码")) {
+        registerForm.value.code = "";
+        await getCode();
       }
+      modal.msgError(message);
     }
   } catch (error) {
     modal.closeLoading();
-    modal.msgError(error && typeof error === "object" ? error.msg || "注册失败，请稍后重试" : "注册失败，请稍后重试");
-    if (captchaEnabled.value) {
-      getCode();
+    const message = error && typeof error === "object" ? error.msg || "注册失败，请稍后重试" : "注册失败，请稍后重试";
+    if (captchaEnabled.value && message.includes("验证码")) {
+      registerForm.value.code = "";
+      await getCode();
     }
+    modal.msgError(message);
   }
 }
 
