@@ -7,5 +7,8 @@ export const medicalAppointmentApi = {
   },
   reserve(data) { return request({ url: "/app/medicalAppointment/reserve", method: "post", data }); },
   getMyAppointments(params = {}) { return request({ url: "/app/medicalAppointment/myAppointments", method: "get", params }); },
+  getManagementScope() { return request({ url: "/app/medicalAppointment/managementScope", method: "get" }); },
+  getAppointments(params = {}) { return request({ url: "/app/medicalAppointment/appointments", method: "get", params, skipParkId: true }); },
+  getAppointment(appointmentId) { return request({ url: `/app/medicalAppointment/appointments/${appointmentId}`, method: "get" }); },
   cancel(appointmentId) { return request({ url: `/app/medicalAppointment/cancel/${appointmentId}`, method: "put" }); },
 };

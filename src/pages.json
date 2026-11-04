@@ -735,6 +735,12 @@
             "enablePullDownRefresh": true
           }
         },
+          {
+            "path": "medicalAppointment/detail",
+            "style": {
+              "navigationBarTitleText": "诊疗预约详情"
+            }
+          },
         {
           "path": "pwd/index",
           "style": {

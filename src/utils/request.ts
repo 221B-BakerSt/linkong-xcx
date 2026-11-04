@@ -37,7 +37,7 @@ const request = <T>(config: RequestConfig):Promise<ResponseData<T>> => {
 	config.header['tenantid'] = getCurrentTenantId()
 
     // 每次请求重新读取，避免切换园区后仍使用应用启动时的旧租户。
-    if (currentParkId) {
+    if (currentParkId && !config.skipParkId) {
       if (method === 'GET' || method === 'DELETE') {
         config.params = { ...(config.params || {}), parkId: config.params?.parkId || currentParkId }
       } else if (config.data && typeof config.data === 'object' && !Array.isArray(config.data)) {

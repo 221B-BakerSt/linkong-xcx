@@ -1,9 +1,10 @@
 <template>
   <view class="page">
-    <view class="hero card"><view class="hero-title">诊疗预约</view><view class="hero-desc">A/C 园区共享诊疗室，名额按诊疗室和时段统一管理</view></view>
+    <view class="hero card"><view class="hero-title">诊疗预约</view></view>
     <view class="card date-card">
-      <view class="section-title">预约日期</view>
-      <view class="field" @click="chooseDate"><text class="label">就诊日期</text><text class="value">{{ bookingDate || '请选择日期' }}</text><text class="arrow">›</text></view>
+      <picker mode="date" :value="bookingDate" :start="today()" @change="chooseDate">
+        <view class="date-field"><text class="date-label">就诊日期：</text><text class="date-value">{{ bookingDate || '请选择日期' }}</text><text class="date-arrow">›</text></view>
+      </picker>
     </view>
     <template v-if="!selectedRoom">
       <view v-for="room in rooms" :key="room.medicalRoomId" class="card room-card" @click="selectRoom(room)">
@@ -37,6 +38,7 @@
           <text class="slot-time">{{ slot.timeSlot }}</text><text class="slot-count">{{ isSlotExpired(slot) ? '已结束' : slot.available ? `剩余 ${slot.remainingCount}` : '已满' }}</text>
         </view>
       </view>
+      <view v-if="canManage" class="room-action" @click="goManagedRecords(selectedRoom.medicalRoomId)">查看该诊疗室预约情况 <text>→</text></view>
     </view>
     <view v-if="selectedRoom && selectedSlot" class="card confirm-card">
       <view class="selection-title">已选择预约时段</view>
@@ -45,6 +47,7 @@
       <button class="primary-btn" :disabled="submitting || selectedSlotExpired" @click="submit">{{ submitting ? '提交中...' : '确认预约' }}</button>
     </view>
     <view class="card link-card" @click="goRecords"><text>查看我的诊疗预约</text><text class="arrow">›</text></view>
+    <view v-if="canManage" class="card link-card" @click="goManagedRecords()"><text>查看园区预约情况</text><text class="arrow">›</text></view>
   </view>
 </template>
 
@@ -54,6 +57,7 @@ import { onHide, onLoad, onShow, onUnload } from "@dcloudio/uni-app";
 import { medicalAppointmentApi } from "@/api/operations/medicalAppointment";
 const rooms = ref([]); const bookingDate = ref(""); const roomId = ref(""); const selectedSlot = ref(""); const remark = ref(""); const submitting = ref(false);
 const currentTime = ref(Date.now());
+const canManage = ref(false);
 let clockTimer;
 const selectedRoom = computed(() => rooms.value.find((room) => String(room.medicalRoomId) === String(roomId.value)));
 const selectedSlotExpired = computed(() => {
@@ -63,7 +67,14 @@ const selectedSlotExpired = computed(() => {
 function today() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
 async function loadRooms() { try { const res = await medicalAppointmentApi.getRooms(); rooms.value = (res.data || res || []).map((room) => ({ ...room, slots: [], loading: false })); await loadSchedules(); } catch (e) { uni.showToast({ title: e?.msg || "诊疗室加载失败", icon: "none" }); } }
 async function loadSchedules() { if (!bookingDate.value) return; await Promise.all(rooms.value.map(async (room) => { room.loading = true; try { const res = await medicalAppointmentApi.getSlots(room.medicalRoomId, bookingDate.value); room.slots = res.data || res || []; } catch (e) { room.slots = []; uni.showToast({ title: e?.msg || `${room.roomName}时段加载失败`, icon: "none" }); } finally { room.loading = false; } })); }
-function chooseDate() { uni.showActionSheet({ itemList: ["今天", "明天", "后天"] }).then(async ({ tapIndex }) => { const d = new Date(); d.setDate(d.getDate() + tapIndex); bookingDate.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; roomId.value = ""; selectedSlot.value = ""; await loadSchedules(); }).catch(() => {}); }
+async function chooseDate(event) {
+  const date = event.detail.value;
+  if (!date || date < today() || date === bookingDate.value) return;
+  bookingDate.value = date;
+  roomId.value = "";
+  selectedSlot.value = "";
+  await loadSchedules();
+}
 function isSlotExpired(slot) {
   if (slot.expired || bookingDate.value !== today()) return Boolean(slot.expired);
   const match = String(slot.timeSlot || '').match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);
@@ -93,10 +104,23 @@ function backToRooms() { roomId.value = ""; selectedSlot.value = ""; }
 function selectSlot(room, slot) { if (slot.expired || isSlotExpired(slot) || !slot.available) return; roomId.value = room.medicalRoomId; selectedSlot.value = slot.timeSlot; }
 async function submit() { if (!bookingDate.value || !roomId.value || !selectedSlot.value) { uni.showToast({ title: "请选择日期、诊疗室和时段", icon: "none" }); return; } submitting.value = true; try { await medicalAppointmentApi.reserve({ medicalRoomId: roomId.value, bookingDate: bookingDate.value, timeSlot: selectedSlot.value, remark: remark.value }); uni.showToast({ title: "预约成功", icon: "success" }); selectedSlot.value = ""; remark.value = ""; await loadSchedules(); } catch (e) { uni.showToast({ title: e?.msg || "名额已被预约，请刷新后重试", icon: "none" }); await loadSchedules(); } finally { submitting.value = false; } }
 function goRecords() { uni.navigateTo({ url: "/pages_mine/pages/medicalAppointment/records" }); }
+function goManagedRecords(medicalRoomId) {
+  const roomQuery = medicalRoomId ? `&medicalRoomId=${medicalRoomId}` : '';
+  uni.navigateTo({ url: `/pages_mine/pages/medicalAppointment/records?mode=managed${roomQuery}` });
+}
+async function loadManagementScope() {
+  try {
+    const res = await medicalAppointmentApi.getManagementScope();
+    canManage.value = res.data === true;
+  } catch (error) {
+    canManage.value = false;
+  }
+}
 function stopClock() { if (clockTimer) clearInterval(clockTimer); clockTimer = undefined; }
 onLoad(() => { bookingDate.value = today(); loadRooms(); });
 onShow(() => {
   currentTime.value = Date.now();
+  loadManagementScope();
   if (bookingDate.value && rooms.value.length) loadSchedules();
   stopClock();
   // Update the displayed current slot locally without polling inventory.
@@ -109,9 +133,12 @@ onUnload(stopClock);
 <style scoped>
 .page { min-height: 100vh; padding: 24rpx; background: #f5f7f8; box-sizing: border-box; }
 .card { background: #fff; border-radius: 18rpx; margin-bottom: 20rpx; box-shadow: 0 8rpx 24rpx rgba(42, 64, 78, .05); }
-.hero { padding: 34rpx 30rpx; color: #fff; background: linear-gradient(135deg, #278d82, #40b39b); }.hero-title { font-size: 40rpx; font-weight: 600; }.hero-desc { margin-top: 12rpx; opacity: .88; font-size: 24rpx; }
+.hero { padding: 34rpx 30rpx; color: #fff; background: linear-gradient(135deg, #278d82, #40b39b); }.hero-title { font-size: 40rpx; font-weight: 600; }
 .date-card { padding: 30rpx; }
-.date-card .field { padding: 26rpx 0 8rpx; }
+.date-field { display: flex; align-items: center; min-height: 54rpx; font-size: 30rpx; }
+.date-label { color: #526a72; }
+.date-value { margin-left: 12rpx; color: #25363a; font-weight: 600; }
+.date-arrow { margin-left: auto; color: #9ba6a8; }
 .room-card { padding: 30rpx; }
 .room-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18rpx; }
 .room-title { color: #25363a; font-size: 33rpx; font-weight: 600; }

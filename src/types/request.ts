@@ -15,6 +15,8 @@ interface BaseRequestConfig {
     timeout?: number | undefined,
     /** 是否显示全局加载动画 默认显示 */
     showLoading?: boolean,
+    /** 管理员跨园区查询时不自动附加当前园区参数；后端仍按账号权限过滤。 */
+    skipParkId?: boolean,
 }
 export interface RequestConfig extends BaseRequestConfig {
     /** 请求方式 */
