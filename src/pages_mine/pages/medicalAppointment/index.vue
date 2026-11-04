@@ -8,15 +8,18 @@
     <template v-if="!selectedRoom">
       <view v-for="room in rooms" :key="room.medicalRoomId" class="card room-card" @click="selectRoom(room)">
       <view class="room-header">
-        <view><view class="room-title">{{ room.roomName }}</view><view class="room-location">{{ room.location || '位置待确认' }}</view></view>
-        <view class="room-badge">A/C 共享</view>
+        <view class="room-title">{{ room.roomName }}</view>
+        <view class="room-location">{{ room.location || '位置待确认' }}</view>
       </view>
       <view class="doctor-line">主治医师：{{ room.attendingDoctor || '待配置' }}</view>
       <view v-if="room.loading" class="loading-text">正在加载可预约情况...</view>
-      <view v-else class="room-stats">
-        <view><text>可预约时段</text><strong>{{ availableSlotCount(room) }} 个</strong></view>
-        <view><text>剩余名额</text><strong>{{ availableSeatCount(room) }} 个</strong></view>
-        <view><text>每时段</text><strong>{{ room.capacity }} 人</strong></view>
+      <view v-else>
+        <view class="current-remaining">当前时段余号：<strong>{{ currentSlotRemaining(room) }}</strong></view>
+        <view class="room-stats">
+          <view><text>可预约时段</text><strong>{{ availableSlotCount(room) }} 个</strong></view>
+          <view><text>剩余名额</text><strong>{{ availableSeatCount(room) }} 个</strong></view>
+          <view><text>每时段</text><strong>{{ room.capacity }} 人</strong></view>
+        </view>
       </view>
       <view class="room-action">点击查看预约时间 <text>→</text></view>
       </view>
@@ -24,8 +27,8 @@
     <view v-else class="card room-detail">
       <view class="detail-back" @click="backToRooms">‹ 返回诊疗室</view>
       <view class="room-header">
-        <view><view class="room-title">{{ selectedRoom.roomName }}</view><view class="room-location">{{ selectedRoom.location || '位置待确认' }}</view></view>
-        <view class="room-badge">A/C 共享</view>
+        <view class="room-title">{{ selectedRoom.roomName }}</view>
+        <view class="room-location">{{ selectedRoom.location || '位置待确认' }}</view>
       </view>
       <view class="doctor-line">主治医师：{{ selectedRoom.attendingDoctor || '待配置' }} · {{ bookingDate }}</view>
       <view v-if="selectedRoom.loading" class="loading-text">正在加载可预约时段...</view>
@@ -47,9 +50,11 @@
 
 <script setup>
 import { computed, ref } from "vue";
-import { onLoad, onShow } from "@dcloudio/uni-app";
+import { onHide, onLoad, onShow, onUnload } from "@dcloudio/uni-app";
 import { medicalAppointmentApi } from "@/api/operations/medicalAppointment";
 const rooms = ref([]); const bookingDate = ref(""); const roomId = ref(""); const selectedSlot = ref(""); const remark = ref(""); const submitting = ref(false);
+const currentTime = ref(Date.now());
+let clockTimer;
 const selectedRoom = computed(() => rooms.value.find((room) => String(room.medicalRoomId) === String(roomId.value)));
 const selectedSlotExpired = computed(() => {
   const slot = selectedRoom.value?.slots?.find((item) => item.timeSlot === selectedSlot.value);
@@ -63,18 +68,42 @@ function isSlotExpired(slot) {
   if (slot.expired || bookingDate.value !== today()) return Boolean(slot.expired);
   const match = String(slot.timeSlot || '').match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);
   if (!match) return false;
-  const now = new Date();
+  const now = new Date(currentTime.value);
   const endMinutes = Number(match[3]) * 60 + Number(match[4]);
   return now.getHours() * 60 + now.getMinutes() >= endMinutes;
 }
 function availableSlotCount(room) { return room.slots.filter((slot) => slot.available && !isSlotExpired(slot)).length; }
 function availableSeatCount(room) { return room.slots.reduce((totalSeats, slot) => totalSeats + (isSlotExpired(slot) ? 0 : Number(slot.remainingCount || 0)), 0); }
+function currentSlotRemaining(room) {
+  if (bookingDate.value !== today()) return '非今日预约';
+  const now = new Date(currentTime.value);
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const slot = room.slots.find((item) => {
+    const match = String(item.timeSlot || '').match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);
+    if (!match) return false;
+    const start = Number(match[1]) * 60 + Number(match[2]);
+    const end = Number(match[3]) * 60 + Number(match[4]);
+    return currentMinutes >= start && currentMinutes < end;
+  });
+  if (!slot) return '暂无当前时段';
+  return slot.remainingCount > 0 ? `${slot.remainingCount} 个` : '已满';
+}
 function selectRoom(room) { roomId.value = room.medicalRoomId; selectedSlot.value = ""; }
 function backToRooms() { roomId.value = ""; selectedSlot.value = ""; }
 function selectSlot(room, slot) { if (slot.expired || isSlotExpired(slot) || !slot.available) return; roomId.value = room.medicalRoomId; selectedSlot.value = slot.timeSlot; }
 async function submit() { if (!bookingDate.value || !roomId.value || !selectedSlot.value) { uni.showToast({ title: "请选择日期、诊疗室和时段", icon: "none" }); return; } submitting.value = true; try { await medicalAppointmentApi.reserve({ medicalRoomId: roomId.value, bookingDate: bookingDate.value, timeSlot: selectedSlot.value, remark: remark.value }); uni.showToast({ title: "预约成功", icon: "success" }); selectedSlot.value = ""; remark.value = ""; await loadSchedules(); } catch (e) { uni.showToast({ title: e?.msg || "名额已被预约，请刷新后重试", icon: "none" }); await loadSchedules(); } finally { submitting.value = false; } }
 function goRecords() { uni.navigateTo({ url: "/pages_mine/pages/medicalAppointment/records" }); }
-onLoad(() => { bookingDate.value = today(); loadRooms(); }); onShow(() => { if (bookingDate.value && rooms.value.length) loadSchedules(); });
+function stopClock() { if (clockTimer) clearInterval(clockTimer); clockTimer = undefined; }
+onLoad(() => { bookingDate.value = today(); loadRooms(); });
+onShow(() => {
+  currentTime.value = Date.now();
+  if (bookingDate.value && rooms.value.length) loadSchedules();
+  stopClock();
+  // Update the displayed current slot locally without polling inventory.
+  clockTimer = setInterval(() => { currentTime.value = Date.now(); }, 30_000);
+});
+onHide(stopClock);
+onUnload(stopClock);
 </script>
 
 <style scoped>
@@ -84,11 +113,12 @@ onLoad(() => { bookingDate.value = today(); loadRooms(); }); onShow(() => { if (
 .date-card { padding: 30rpx; }
 .date-card .field { padding: 26rpx 0 8rpx; }
 .room-card { padding: 30rpx; }
-.room-header { display: flex; align-items: flex-start; justify-content: space-between; }
+.room-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18rpx; }
 .room-title { color: #25363a; font-size: 33rpx; font-weight: 600; }
-.room-location { margin-top: 10rpx; color: #788588; font-size: 24rpx; }
-.room-badge { padding: 8rpx 14rpx; color: #16806f; background: #e1f6f0; border-radius: 999rpx; font-size: 22rpx; }
+.room-location { max-width: 60%; color: #25363a; font-size: 31rpx; font-weight: 600; text-align: right; overflow-wrap: anywhere; }
 .doctor-line { margin-top: 20rpx; padding: 16rpx 18rpx; color: #526a72; background: #f7fafc; border-radius: 8rpx; font-size: 24rpx; }
+.current-remaining { display: flex; justify-content: space-between; margin-top: 22rpx; color: #526a72; font-size: 25rpx; }
+.current-remaining strong { color: #188c7b; font-size: 28rpx; }
 .room-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12rpx; padding: 24rpx 0 20rpx; }
 .room-stats view { padding-right: 10rpx; border-right: 1rpx solid #e7eeee; }
 .room-stats view:last-child { border-right: 0; }
