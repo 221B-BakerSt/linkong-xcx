@@ -11,7 +11,7 @@
       <view class="room-name">{{ notice.roomName || '诊疗室' }}</view>
       <view class="info-row"><text class="label">诊疗室位置</text><text class="value">{{ notice.location || '位置待确认' }}</text></view>
       <view class="info-row"><text class="label">主治医师</text><text class="value">{{ notice.attendingDoctor || '待配置' }}</text></view>
-      <view class="info-row"><text class="label">暂停接诊时间</text><text class="value">{{ timingText }}</text></view>
+      <view class="info-row"><text class="label">暂停接诊时间</text><text class="value">{{ timingText(notice) }}</text></view>
       <view class="reason-title">暂停原因</view>
       <view class="reason-content">{{ notice.noticeContent || '请留意后续公告。' }}</view>
       <view class="apology">由此给您带来的不便，敬请谅解。</view>
