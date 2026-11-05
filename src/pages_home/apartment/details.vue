@@ -74,7 +74,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from "vue";
 import { onLoad } from "@dcloudio/uni-app";
-import { getApartmentDetail } from "@/api/operations/apartment";
+import { getApartmentDetail } from "@/pages_home/api/apartment";
 
 const currentIndex = ref(0);
 const apartmentId = ref(null);

@@ -29,7 +29,7 @@
 
 <script>
 import { ref, onMounted } from "vue";
-import { getHeatColdList } from "@/api/operations/heatCold";
+import { getHeatColdList } from "@/pages_park/api/heatCold";
 
 export default {
   setup() {

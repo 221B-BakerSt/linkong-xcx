@@ -43,7 +43,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from "vue";
-import { getEnterpriseAssessmentDetail } from "@/api/info/assessment"; // 引入 API
+import { getEnterpriseAssessmentDetail } from "@/pages_info/api/assessment"; // 引入 API
 
 const loading = ref(false);
 const assessmentId = ref('');

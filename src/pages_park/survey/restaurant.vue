@@ -346,7 +346,7 @@ import { ref, onMounted } from "vue";
 import {
     getQuestionnaireAssessmentDetail,
     submitRestaurantQuest,
-} from "@/api/operations/questionnaireAssessment";
+} from "@/pages_park/api/questionnaireAssessment";
 
 // 从路由参数获取问卷 ID
 const assessmentId = ref("");

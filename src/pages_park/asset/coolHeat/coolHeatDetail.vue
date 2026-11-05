@@ -60,7 +60,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { getHeatColdDetail } from "@/api/operations/heatCold";
+import { getHeatColdDetail } from "@/pages_park/api/heatCold";
 
 const detail = ref({});
 

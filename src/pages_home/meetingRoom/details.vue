@@ -129,7 +129,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { meetingRoomApi } from "@/api/operations/meetingRoom";
+import { meetingRoomApi } from "@/pages_home/api/meetingRoom";
 import { getParkMeetingRoomDetail } from "@/api/park/park";
 
 const currentIndex = ref(0);

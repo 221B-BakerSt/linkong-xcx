@@ -81,7 +81,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import { getBoilerOperationRecords } from '@/api/operations/assetRecords'
+import { getBoilerOperationRecords } from '@/pages_park/api/assetRecords'
 import { getCurrentPark, getCurrentParkId } from '@/utils/parkContext'
 
 const record = ref(null)

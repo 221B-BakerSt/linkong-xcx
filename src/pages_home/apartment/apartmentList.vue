@@ -57,7 +57,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { getApartmentList } from "@/api/operations/apartment";
+import { getApartmentList } from "@/pages_home/api/apartment";
 
 const meetingList = ref([]);
 

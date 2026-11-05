@@ -54,7 +54,7 @@
     </view>
 </template>
 <script>
-import { getInteractionDemandDetail } from "@/api/home/enterprise";
+import { getInteractionDemandDetail } from "@/pages_home/api/enterprise";
 
 export default {
     data() {

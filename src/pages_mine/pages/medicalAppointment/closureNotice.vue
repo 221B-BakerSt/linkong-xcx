@@ -22,7 +22,7 @@
 <script setup>
 import { ref } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
-import { medicalAppointmentApi } from '@/api/operations/medicalAppointment';
+import { medicalAppointmentApi } from '@/pages_mine/pages/api/medicalAppointment';
 
 const notices = ref([]);
 const loading = ref(true);

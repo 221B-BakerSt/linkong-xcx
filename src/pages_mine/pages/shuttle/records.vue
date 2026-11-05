@@ -61,7 +61,7 @@
 <script setup>
 import { computed, nextTick, onUnmounted, ref } from "vue";
 import { onHide, onLoad, onPullDownRefresh, onReachBottom, onShow } from "@dcloudio/uni-app";
-import { shuttleBusApi } from "@/api/operations/shuttleBus";
+import { shuttleBusApi } from "@/pages_mine/pages/api/shuttleBus";
 
 const CONTENT_SELECTOR = "#records-content";
 const VIEWPORT_TOLERANCE = 8;

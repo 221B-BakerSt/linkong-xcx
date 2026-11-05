@@ -107,7 +107,7 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import { addHeatCold } from "@/api/operations/heatCold";
+import { addHeatCold } from "@/pages_park/api/heatCold";
 
 const form = ref({
   companyName: "",

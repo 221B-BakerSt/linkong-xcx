@@ -28,7 +28,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
-import { getEnterpriseAssessmentList } from '@/api/info/assessment';
+import { getEnterpriseAssessmentList } from '@/pages_info/api/assessment';
 
 // 任务列表数据
 const infoList = ref([]);

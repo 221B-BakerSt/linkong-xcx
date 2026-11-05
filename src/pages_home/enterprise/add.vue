@@ -76,7 +76,7 @@
 <script setup>
 import { ref, reactive, onMounted } from "vue";
 import { getUserProfile } from "@/api/system/user";
-import { addInteractionDemand } from "@/api/home/enterprise";
+import { addInteractionDemand } from "@/pages_home/api/enterprise";
 
 // 表单数据
 const formData = reactive({

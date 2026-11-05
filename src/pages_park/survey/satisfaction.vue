@@ -29,7 +29,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { getPropertyQuestTaskList } from "@/api/operations/questionnaireAssessment";
+import { getPropertyQuestTaskList } from "@/pages_park/api/questionnaireAssessment";
 
 // 调查列表数据
 const surveyList = ref([]);

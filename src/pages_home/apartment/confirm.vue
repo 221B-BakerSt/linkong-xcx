@@ -94,7 +94,7 @@ import { ref, onMounted, computed } from "vue";
 import {
     getApartmentDetail,
     addApartmentBooking,
-} from "@/api/operations/apartment";
+} from "@/pages_home/api/apartment";
 import store from "@/store";
 
 const detail = ref({});

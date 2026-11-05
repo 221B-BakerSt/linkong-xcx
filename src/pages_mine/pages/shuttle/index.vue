@@ -95,7 +95,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { onLoad, onPullDownRefresh, onShow } from "@dcloudio/uni-app";
-import { shuttleBusApi } from "@/api/operations/shuttleBus";
+import { shuttleBusApi } from "@/pages_mine/pages/api/shuttleBus";
 import { getUserProfile } from "@/api/system/user";
 
 const SHUTTLE_PASSENGER_CACHE_KEY = "lkShuttlePassengerForm";

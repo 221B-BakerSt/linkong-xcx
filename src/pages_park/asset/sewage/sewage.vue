@@ -83,7 +83,7 @@
 <script setup>
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import { getSewageTreatmentRecords } from '@/api/operations/assetRecords'
+import { getSewageTreatmentRecords } from '@/pages_park/api/assetRecords'
 import { getCurrentParkId } from '@/utils/parkContext'
 
 const record = ref(null)

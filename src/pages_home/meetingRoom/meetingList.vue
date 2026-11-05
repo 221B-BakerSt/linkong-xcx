@@ -63,7 +63,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { meetingRoomApi } from "@/api/operations/meetingRoom";
+import { meetingRoomApi } from "@/pages_home/api/meetingRoom";
 import { getParkMeetingRoomList } from "@/api/park/park";
 
 const meetingList = ref([]);

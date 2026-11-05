@@ -104,7 +104,7 @@ import { ref, reactive, onMounted } from "vue";
 import {
     getEnterpriseAssessmentDetail,
     updateEnterpriseAssessmentDetail,
-} from "@/api/info/assessment";
+} from "@/pages_info/api/assessment";
 // 引入封装好的上传接口
 import { uploadOss } from "@/api/system/user";
 

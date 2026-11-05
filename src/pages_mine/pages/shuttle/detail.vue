@@ -143,7 +143,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { onHide, onLoad, onShow, onUnload } from "@dcloudio/uni-app";
-import { shuttleBusApi } from "@/api/operations/shuttleBus";
+import { shuttleBusApi } from "@/pages_mine/pages/api/shuttleBus";
 
 const reservationId = ref("");
 const detail = ref({});

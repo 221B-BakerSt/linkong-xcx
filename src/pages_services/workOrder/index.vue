@@ -42,7 +42,7 @@
 <script setup>
 import { computed, reactive } from "vue";
 import { onShow } from "@dcloudio/uni-app";
-import { workOrderApi } from "@/api/operations/workOrder";
+import { workOrderApi } from "@/pages_services/api/workOrder";
 import { getRoleFlags } from "./utils";
 import { getCurrentPark } from "@/utils/parkContext";
 

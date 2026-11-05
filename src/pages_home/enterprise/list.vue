@@ -80,7 +80,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { getInteractionDemandList } from "@/api/home/enterprise";
+import { getInteractionDemandList } from "@/pages_home/api/enterprise";
 
 // 当前选中的标签
 const currentTab = ref(0);

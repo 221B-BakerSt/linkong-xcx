@@ -1,4 +1,4 @@
-﻿<template>
+<template>
     <view class="registration-details-container">
         <!-- 活动报名信息卡片 -->
         <view class="info-card">
@@ -44,7 +44,7 @@ import { ref, onMounted } from "vue";
 import {
     getActivityTaskDetail,
     getActivityRegisterList,
-} from "@/api/operations/questionnaireAssessment";
+} from "@/pages_park/api/questionnaireAssessment";
 
 // 从路由参数获取活动 ID
 const assessmentId = ref("");

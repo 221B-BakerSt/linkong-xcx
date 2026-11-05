@@ -79,7 +79,7 @@
 import { ref, onMounted, reactive } from "vue";
 import { onLoad } from "@dcloudio/uni-app";
 import { getUserProfile, getDicts } from "@/api/system/user";
-import { addUserConsult } from "@/api/system/userInquiry";
+import { addUserConsult } from "@/pages_services/api/userInquiry";
 
 // 响应式数据
 const form = reactive({

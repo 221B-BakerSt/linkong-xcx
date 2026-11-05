@@ -77,7 +77,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { getParkMeetingRoomDetail } from "@/api/park/park";
-import { meetingRoomApi } from "@/api/operations/meetingRoom";
+import { meetingRoomApi } from "@/pages_home/api/meetingRoom";
 import { getUserProfile } from "@/api/system/user";
 
 const form = ref({

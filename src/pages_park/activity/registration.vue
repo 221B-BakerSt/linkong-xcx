@@ -35,7 +35,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { getActivityTaskList } from "@/api/operations/questionnaireAssessment";
+import { getActivityTaskList } from "@/pages_park/api/questionnaireAssessment";
 
 // 活动列表数据
 const activityList = ref([]);

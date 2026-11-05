@@ -263,7 +263,7 @@
 import { computed, reactive, ref } from "vue";
 import { onLoad, onShow, onUnload } from "@dcloudio/uni-app";
 import { uploadOss } from "@/api/system/user";
-import { workOrderApi } from "@/api/operations/workOrder";
+import { workOrderApi } from "@/pages_services/api/workOrder";
 import {
     STATUS_LABEL_MAP,
     ORDER_TYPE_LABEL_MAP,

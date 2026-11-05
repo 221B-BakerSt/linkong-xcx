@@ -124,7 +124,7 @@
 import { reactive, ref } from "vue";
 import { onLoad, onUnload } from "@dcloudio/uni-app";
 import { uploadOss } from "@/api/system/user";
-import { workOrderApi } from "@/api/operations/workOrder";
+import { workOrderApi } from "@/pages_services/api/workOrder";
 import {
     buildWorkOrderUploadFormData,
     buildUploadedFile,
