@@ -1,8 +1,13 @@
 <template>
   <view class="page">
     <view class="hero card"><view class="hero-title">诊疗预约</view></view>
+    <view v-if="notices.length" class="notice-strip card" @click="showClosureNotice(notices[0])">
+      <text class="notice-badge">停用公告</text>
+      <view class="notice-window"><view class="notice-track"><view v-for="copy in 2" :key="copy" class="notice-copy"><text v-for="notice in notices" :key="copy + '-' + notice.closureId" @click.stop="showClosureNotice(notice)">{{ notice.noticeTitle }} · {{ notice.roomName }}　　</text></view></view></view>
+      <text class="notice-detail" @click.stop="showClosureNotice(notices[0])">详情 ›</text>
+    </view>
     <view class="card date-card">
-      <picker mode="date" :value="bookingDate" :start="today()" @change="chooseDate">
+      <picker mode="date" :value="bookingDate" :start="today()" :end="maxDate()" @change="chooseDate">
         <view class="date-field"><text class="date-label">就诊日期：</text><text class="date-value">{{ bookingDate || '请选择日期' }}</text><text class="date-arrow">›</text></view>
       </picker>
     </view>
@@ -35,7 +40,7 @@
       <view v-if="selectedRoom.loading" class="loading-text">正在加载可预约时段...</view>
       <view v-else class="slot-grid">
         <view v-for="slot in selectedRoom.slots" :key="slot.timeSlot" :class="['slot', selectedSlot === slot.timeSlot && !isSlotExpired(slot) && slot.available && 'selected', (isSlotExpired(slot) || !slot.available) && 'disabled']" @click="selectSlot(selectedRoom, slot)">
-          <text class="slot-time">{{ slot.timeSlot }}</text><text class="slot-count">{{ isSlotExpired(slot) ? '已结束' : slot.available ? `剩余 ${slot.remainingCount}` : '已满' }}</text>
+          <text class="slot-time">{{ slot.timeSlot }}</text><text class="slot-count">{{ slot.disabledReason || (isSlotExpired(slot) ? "已结束" : slot.available ? "剩余 " + slot.remainingCount : "已满") }}</text>
         </view>
       </view>
       <view v-if="canManage" class="room-action" @click="goManagedRecords(selectedRoom.medicalRoomId)">查看该诊疗室预约情况 <text>→</text></view>
@@ -47,7 +52,7 @@
       <button class="primary-btn" :disabled="submitting || selectedSlotExpired" @click="submit">{{ submitting ? '提交中...' : '确认预约' }}</button>
     </view>
     <view class="card link-card" @click="goRecords"><text>查看我的诊疗预约</text><text class="arrow">›</text></view>
-    <view v-if="canManage" class="card link-card" @click="goManagedRecords()"><text>查看园区预约情况</text><text class="arrow">›</text></view>
+    <view v-if="canManage" class="card link-card" @click="goManagedRecords()"><text>查看所有园区预约情况</text><text class="arrow">›</text></view>
   </view>
 </template>
 
@@ -58,6 +63,7 @@ import { medicalAppointmentApi } from "@/api/operations/medicalAppointment";
 const rooms = ref([]); const bookingDate = ref(""); const roomId = ref(""); const selectedSlot = ref(""); const remark = ref(""); const submitting = ref(false);
 const currentTime = ref(Date.now());
 const canManage = ref(false);
+const notices = ref([]);
 let clockTimer;
 const selectedRoom = computed(() => rooms.value.find((room) => String(room.medicalRoomId) === String(roomId.value)));
 const selectedSlotExpired = computed(() => {
@@ -65,6 +71,15 @@ const selectedSlotExpired = computed(() => {
   return !slot || isSlotExpired(slot);
 });
 function today() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+async function loadClosures() { try { const res = await medicalAppointmentApi.getClosures(); notices.value = res.data || res || []; } catch (e) { notices.value = []; } }
+function showClosureNotice(notice) {
+  const days = notice.closureType === 'WEEKLY' ? '每周' + (notice.weekdays || []).map((day) => ['一', '二', '三', '四', '五', '六', '日'][day - 1] + '、').join('').replace(/、$/, '') :
+    notice.closureType === 'MONTHLY' ? '每月' + (notice.monthDays || []).join('日、') + '日' :
+    notice.closureType === 'DATES' ? (notice.closureDates || []).join('、') : '立即停用';
+  const range = notice.startDate ? '\n生效日期：' + notice.startDate + (notice.endDate ? ' 至 ' + notice.endDate : ' 起') : '';
+  uni.showModal({ title: notice.noticeTitle || '诊疗室停用公告', content: (notice.roomName || '') + (notice.location ? '（' + notice.location + '）' : '') + '\n停用日期：' + days + range + '\n' + (notice.noticeContent || ''), showCancel: false, confirmText: '知道了' });
+}
+function maxDate() { const d = new Date(); d.setDate(d.getDate() + 7); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 async function loadRooms() { try { const res = await medicalAppointmentApi.getRooms(); rooms.value = (res.data || res || []).map((room) => ({ ...room, slots: [], loading: false })); await loadSchedules(); } catch (e) { uni.showToast({ title: e?.msg || "诊疗室加载失败", icon: "none" }); } }
 async function loadSchedules() { if (!bookingDate.value) return; await Promise.all(rooms.value.map(async (room) => { room.loading = true; try { const res = await medicalAppointmentApi.getSlots(room.medicalRoomId, bookingDate.value); room.slots = res.data || res || []; } catch (e) { room.slots = []; uni.showToast({ title: e?.msg || `${room.roomName}时段加载失败`, icon: "none" }); } finally { room.loading = false; } })); }
 async function chooseDate(event) {
@@ -84,7 +99,7 @@ function isSlotExpired(slot) {
   return now.getHours() * 60 + now.getMinutes() >= endMinutes;
 }
 function availableSlotCount(room) { return room.slots.filter((slot) => slot.available && !isSlotExpired(slot)).length; }
-function availableSeatCount(room) { return room.slots.reduce((totalSeats, slot) => totalSeats + (isSlotExpired(slot) ? 0 : Number(slot.remainingCount || 0)), 0); }
+function availableSeatCount(room) { return room.slots.reduce((totalSeats, slot) => totalSeats + (slot.available && !isSlotExpired(slot) ? Number(slot.remainingCount || 0) : 0), 0); }
 function currentSlotRemaining(room) {
   if (bookingDate.value !== today()) return '非今日预约';
   const now = new Date(currentTime.value);
@@ -97,7 +112,7 @@ function currentSlotRemaining(room) {
     return currentMinutes >= start && currentMinutes < end;
   });
   if (!slot) return '暂无当前时段';
-  return slot.remainingCount > 0 ? `${slot.remainingCount} 个` : '已满';
+  return slot.disabledReason || (slot.available && slot.remainingCount > 0 ? `${slot.remainingCount} 个` : '已满');
 }
 function selectRoom(room) { roomId.value = room.medicalRoomId; selectedSlot.value = ""; }
 function backToRooms() { roomId.value = ""; selectedSlot.value = ""; }
@@ -117,10 +132,11 @@ async function loadManagementScope() {
   }
 }
 function stopClock() { if (clockTimer) clearInterval(clockTimer); clockTimer = undefined; }
-onLoad(() => { bookingDate.value = today(); loadRooms(); });
+onLoad(() => { bookingDate.value = today(); loadRooms(); loadClosures(); });
 onShow(() => {
   currentTime.value = Date.now();
   loadManagementScope();
+  loadClosures();
   if (bookingDate.value && rooms.value.length) loadSchedules();
   stopClock();
   // Update the displayed current slot locally without polling inventory.
@@ -134,6 +150,13 @@ onUnload(stopClock);
 .page { min-height: 100vh; padding: 24rpx; background: #f5f7f8; box-sizing: border-box; }
 .card { background: #fff; border-radius: 18rpx; margin-bottom: 20rpx; box-shadow: 0 8rpx 24rpx rgba(42, 64, 78, .05); }
 .hero { padding: 34rpx 30rpx; color: #fff; background: linear-gradient(135deg, #278d82, #40b39b); }.hero-title { font-size: 40rpx; font-weight: 600; }
+.notice-strip { display: flex; align-items: center; gap: 14rpx; padding: 20rpx 24rpx; overflow: hidden; color: #a62c2c; background: #fff5f5; }
+.notice-badge { flex-shrink: 0; padding: 5rpx 10rpx; color: #fff; background: #e34b4b; border-radius: 6rpx; font-size: 21rpx; }
+.notice-window { flex: 1; overflow: hidden; white-space: nowrap; }
+.notice-track { display: inline-flex; width: max-content; animation: notice-scroll 16s linear infinite; font-size: 24rpx; }
+.notice-copy { display: inline-flex; flex-shrink: 0; }
+.notice-detail { flex-shrink: 0; color: #c53a3a; font-size: 22rpx; }
+@keyframes notice-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .date-card { padding: 30rpx; }
 .date-field { display: flex; align-items: center; min-height: 54rpx; font-size: 30rpx; }
 .date-label { color: #526a72; }

@@ -3,7 +3,7 @@
     <view class="title">诊疗预约记录</view>
     <view v-if="canManage" class="tabs">
       <view :class="['tab', tab === 'mine' && 'selected']" @click="changeTab('mine')">我的预约</view>
-      <view :class="['tab', tab === 'managed' && 'selected']" @click="changeTab('managed')">园区预约情况</view>
+      <view :class="['tab', tab === 'managed' && 'selected']" @click="changeTab('managed')">所有园区预约</view>
     </view>
     <view v-if="tab === 'managed'" class="filters card">
       <picker mode="date" :value="filterDate" @change="changeDate">
@@ -25,6 +25,7 @@
       <view class="line">{{ item.bookingDate }}　{{ item.timeSlot }}</view>
       <view class="line muted">{{ item.location || '位置待确认' }} · {{ item.parkName || '所属园区' }}</view>
       <view class="line muted">预约人：{{ item.userName || '-' }}　部门：{{ item.deptName || '未设置' }}</view>
+      <view v-if="item.cancelReason" class="cancel-warning">{{ item.cancelReason }}</view>
       <view class="detail-link">查看详情与备注　›</view>
       <button v-if="tab === 'mine' && canCancel(item)" class="cancel-btn" :disabled="cancellingId === item.appointmentId" @click.stop="cancel(item)">
         {{ cancellingId === item.appointmentId ? '取消中...' : '取消预约' }}
@@ -187,6 +188,7 @@ onUnload(stopClock);
 .line { margin-top: 16rpx; color: #536468; font-size: 25rpx; }
 .muted { color: #8b9698; font-size: 23rpx; }
 .detail-link { margin-top: 20rpx; color: #16806f; font-size: 24rpx; text-align: right; }
+.cancel-warning { margin-top: 14rpx; padding: 16rpx 18rpx; color: #b42318; background: #fff1f0; border: 1rpx solid #ffd6d2; border-radius: 10rpx; font-size: 24rpx; }
 .cancel-btn { width: 160rpx; height: 62rpx; margin: 22rpx 0 0 auto; color: #b85e55; background: #fff3f1; border: 0; border-radius: 10rpx; font-size: 24rpx; line-height: 62rpx; }
 .empty, .load-state { padding: 50rpx 0; color: #a3acad; text-align: center; font-size: 27rpx; }
 .more-link { color: #16806f; }

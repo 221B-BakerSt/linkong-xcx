@@ -13,6 +13,7 @@
       <view class="row"><text>预约园区</text><text>{{ appointment.parkName || '-' }}</text></view>
       <view class="row"><text>预约人</text><text>{{ appointment.userName || '-' }}</text></view>
       <view class="row"><text>所属部门</text><text>{{ appointment.deptName || '未设置' }}</text></view>
+      <view v-if="appointment.cancelReason" class="cancel-warning">{{ appointment.cancelReason }}</view>
       <view class="remark-title">预约备注</view>
       <view class="remark">{{ appointment.remark || '无备注' }}</view>
     </view>
@@ -48,6 +49,7 @@ onLoad(async (options) => {
 .row { display: flex; justify-content: space-between; gap: 20rpx; padding: 19rpx 0; border-bottom: 1rpx solid #eef1f2; color: #526a72; font-size: 26rpx; }
 .row text:last-child { color: #25363a; text-align: right; }
 .remark-title { margin-top: 32rpx; color: #25363a; font-size: 28rpx; font-weight: 600; }
+.cancel-warning { margin-top: 20rpx; padding: 18rpx; color: #b42318; background: #fff1f0; border: 1rpx solid #ffd6d2; border-radius: 10rpx; font-size: 25rpx; }
 .remark { margin-top: 16rpx; min-height: 90rpx; padding: 22rpx; color: #526a72; background: #f7faf9; border-radius: 12rpx; font-size: 26rpx; overflow-wrap: anywhere; }
 .empty { padding: 180rpx 0; color: #a3acad; text-align: center; font-size: 27rpx; }
 </style>

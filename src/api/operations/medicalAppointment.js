@@ -5,6 +5,8 @@ export const medicalAppointmentApi = {
   getSlots(medicalRoomId, bookingDate) {
     return request({ url: "/app/medicalAppointment/slots", method: "get", params: { medicalRoomId, bookingDate } });
   },
+  getClosures() { return request({ url: "/app/medicalAppointment/closures", method: "get" }); },
+  getClosure(closureId) { return request({ url: `/app/medicalAppointment/closures/${closureId}`, method: "get" }); },
   reserve(data) { return request({ url: "/app/medicalAppointment/reserve", method: "post", data }); },
   getMyAppointments(params = {}) { return request({ url: "/app/medicalAppointment/myAppointments", method: "get", params }); },
   getManagementScope() { return request({ url: "/app/medicalAppointment/managementScope", method: "get" }); },
