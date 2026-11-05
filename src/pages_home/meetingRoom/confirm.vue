@@ -78,7 +78,7 @@
 import { ref, onMounted } from "vue";
 import { getParkMeetingRoomDetail } from "@/api/park/park";
 import { meetingRoomApi } from "@/pages_home/api/meetingRoom";
-import { getUserProfile } from "@/api/system/user";
+import { getUserProfile } from "@/pages_home/api/user";
 
 const form = ref({
     meetingRoomId: "",

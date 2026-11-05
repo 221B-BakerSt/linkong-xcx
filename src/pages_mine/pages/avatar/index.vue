@@ -52,7 +52,7 @@
 <script>
 import config from '@/config'
 import store from "@/store"
-import { uploadAvatar } from "@/api/system/user"
+import { uploadAvatar } from "@/pages_mine/pages/api/user"
 
 const baseUrl = config.baseUrl
 let sysInfo = uni.getSystemInfoSync()

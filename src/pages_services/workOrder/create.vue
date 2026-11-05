@@ -123,7 +123,7 @@
 <script setup>
 import { reactive, ref } from "vue";
 import { onLoad, onUnload } from "@dcloudio/uni-app";
-import { uploadOss } from "@/api/system/user";
+import { uploadOss } from "@/pages_services/api/user";
 import { workOrderApi } from "@/pages_services/api/workOrder";
 import {
     buildWorkOrderUploadFormData,

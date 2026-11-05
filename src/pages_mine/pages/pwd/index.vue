@@ -16,7 +16,7 @@
 </template>
 
 <script>
-  import { updateUserPwd } from "@/api/system/user"
+  import { updateUserPwd } from "@/pages_mine/pages/api/user"
 
   export default {
     data() {

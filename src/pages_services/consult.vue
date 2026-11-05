@@ -78,7 +78,7 @@
 <script setup>
 import { ref, onMounted, reactive } from "vue";
 import { onLoad } from "@dcloudio/uni-app";
-import { getUserProfile, getDicts } from "@/api/system/user";
+import { getUserProfile, getDicts } from "@/pages_services/api/user";
 import { addUserConsult } from "@/pages_services/api/userInquiry";
 
 // 响应式数据

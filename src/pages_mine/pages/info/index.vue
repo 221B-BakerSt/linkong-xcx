@@ -68,7 +68,7 @@
 </template>
 
 <script>
-import { getUserProfile } from "@/api/system/user";
+import { getUserProfile } from "@/pages_mine/pages/api/user";
 
 const defaultUser = () => ({
   nickName: "",

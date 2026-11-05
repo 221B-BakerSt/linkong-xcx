@@ -21,8 +21,8 @@
 </template>
 
 <script>
-import { getUserProfile } from "@/api/system/user"
-import { updateUserProfile } from "@/api/system/user"
+import { getUserProfile } from "@/pages_mine/pages/api/user"
+import { updateUserProfile } from "@/pages_mine/pages/api/user"
 
 export default {
   data() {

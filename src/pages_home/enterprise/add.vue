@@ -75,7 +75,7 @@
 </template>
 <script setup>
 import { ref, reactive, onMounted } from "vue";
-import { getUserProfile } from "@/api/system/user";
+import { getUserProfile } from "@/pages_home/api/user";
 import { addInteractionDemand } from "@/pages_home/api/enterprise";
 
 // 表单数据

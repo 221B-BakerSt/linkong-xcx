@@ -106,7 +106,7 @@ import {
     updateEnterpriseAssessmentDetail,
 } from "@/pages_info/api/assessment";
 // 引入封装好的上传接口
-import { uploadOss } from "@/api/system/user";
+import { uploadOss } from "@/pages_info/api/user";
 
 // 状态标识
 const loading = ref(false);
