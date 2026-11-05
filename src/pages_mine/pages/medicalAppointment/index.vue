@@ -3,15 +3,15 @@
     <view class="hero card"><view class="hero-title">诊疗预约</view></view>
     <view v-if="notices.length" class="notice-strip card">
       <text class="notice-badge">停诊公告</text>
-      <swiper class="notice-swiper" vertical circular autoplay :interval="3500" :duration="450" @change="onNoticeChange">
-        <swiper-item v-for="notice in notices" :key="notice.closureId" @click="openClosureNotice(notice)">
+      <swiper class="notice-swiper" vertical circular autoplay :interval="3500" :duration="450">
+        <swiper-item v-for="notice in notices" :key="notice.closureId">
           <view class="notice-item">
             <text class="notice-title">{{ notice.noticeTitle }}</text>
             <text class="notice-summary">{{ notice.roomName }} · {{ closureTimingLabel(notice) }}</text>
           </view>
         </swiper-item>
       </swiper>
-      <text class="notice-detail" @click="openCurrentClosureNotice">详情 ›</text>
+      <text class="notice-detail" @click="openClosureNotice">全部公告 ›</text>
     </view>
     <view class="card date-card">
       <picker mode="date" :value="bookingDate" :start="today()" :end="maxDate()" @change="chooseDate">
@@ -74,7 +74,6 @@ const rooms = ref([]); const bookingDate = ref(""); const roomId = ref(""); cons
 const currentTime = ref(Date.now());
 const canManage = ref(false);
 const notices = ref([]);
-const noticeIndex = ref(0);
 let clockTimer;
 const selectedRoom = computed(() => rooms.value.find((room) => String(room.medicalRoomId) === String(roomId.value)));
 const selectedRoomClosures = computed(() => selectedRoom.value
@@ -86,12 +85,9 @@ const selectedSlotExpired = computed(() => {
 });
 function today() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
 async function loadClosures() { try { const res = await medicalAppointmentApi.getClosures(); notices.value = res.data || res || []; } catch (e) { notices.value = []; } }
-function onNoticeChange(event) { noticeIndex.value = Number(event.detail.current || 0); }
-function openClosureNotice(notice) {
-  if (!notice?.closureId) return;
-  uni.navigateTo({ url: '/pages_mine/pages/medicalAppointment/closureNotice?closureId=' + notice.closureId });
+function openClosureNotice() {
+  uni.navigateTo({ url: '/pages_mine/pages/medicalAppointment/closureNotice' });
 }
-function openCurrentClosureNotice() { openClosureNotice(notices.value[noticeIndex.value] || notices.value[0]); }
 function closureTimingLabel(notice, selectedDate) {
   if (selectedDate) return selectedDate;
   if (notice.closureType === 'WEEKLY') {

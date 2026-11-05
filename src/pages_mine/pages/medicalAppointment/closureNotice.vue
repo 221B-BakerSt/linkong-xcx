@@ -1,11 +1,11 @@
 <template>
   <view class="page">
     <view v-if="loading" class="state">正在加载公告详情…</view>
-    <view v-else-if="!notice" class="state">公告不存在或已无法查看</view>
-    <view v-else class="notice-card">
+    <view v-else-if="!notices.length" class="state">当前没有正在生效的停诊公告</view>
+    <view v-else v-for="notice in notices" :key="notice.closureId" class="notice-card">
       <view class="notice-heading">
         <text class="notice-mark">停诊公告</text>
-        <text :class="['notice-status', notice.status === '0' ? 'active' : 'inactive']">{{ notice.status === '0' ? '生效中' : '已结束' }}</text>
+        <text class="notice-status active">生效中</text>
       </view>
       <view class="notice-title">{{ notice.noticeTitle || '诊疗室暂停接诊通知' }}</view>
       <view class="room-name">{{ notice.roomName || '诊疗室' }}</view>
@@ -20,21 +20,19 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 import { medicalAppointmentApi } from '@/api/operations/medicalAppointment';
 
-const notice = ref(null);
+const notices = ref([]);
 const loading = ref(true);
-const timingText = computed(() => {
-  if (!notice.value) return '';
-  const item = notice.value;
+function timingText(item) {
   const start = item.startDate || '立即';
   const end = item.endDate ? '至 ' + item.endDate : '起，持续生效';
   if (item.closureType === 'WEEKLY') {
     const days = ['一', '二', '三', '四', '五', '六', '日'];
     const weekdays = (item.weekdays || []).map((day) => days[Number(day) - 1]).filter(Boolean).join('、');
-    return '每周' + weekdays + '，' + start + end;
+    return weekdays ? '每周' + weekdays + '，' + start + end : start + end;
   }
   if (item.closureType === 'MONTHLY') return '每月' + (item.monthDays || []).join('日、') + '日，' + start + end;
   if (item.closureType === 'DATES') {
@@ -42,12 +40,12 @@ const timingText = computed(() => {
     return item.endDate ? dates + '（公告有效期：' + start + '至 ' + item.endDate + '）' : dates;
   }
   return start + end;
-});
+}
 
-onLoad(async (options) => {
+onLoad(async () => {
   try {
-    const result = await medicalAppointmentApi.getClosure(options.closureId);
-    notice.value = result.data || null;
+    const result = await medicalAppointmentApi.getClosures();
+    notices.value = result.data || result || [];
   } catch (error) {
     uni.showToast({ title: error?.msg || '公告详情加载失败', icon: 'none' });
   } finally {
@@ -58,7 +56,7 @@ onLoad(async (options) => {
 
 <style scoped>
 .page { min-height: 100vh; box-sizing: border-box; padding: 28rpx 24rpx; background: #f5f7f8; }
-.notice-card { padding: 32rpx 28rpx; background: #fff; border-radius: 18rpx; box-shadow: 0 8rpx 24rpx rgba(42, 64, 78, .05); }
+.notice-card { margin-bottom: 22rpx; padding: 32rpx 28rpx; background: #fff; border-radius: 18rpx; box-shadow: 0 8rpx 24rpx rgba(42, 64, 78, .05); }
 .notice-heading { display: flex; align-items: center; justify-content: space-between; }
 .notice-mark { padding: 8rpx 14rpx; color: #fff; background: #e34b4b; border-radius: 8rpx; font-size: 22rpx; }
 .notice-status { font-size: 23rpx; }

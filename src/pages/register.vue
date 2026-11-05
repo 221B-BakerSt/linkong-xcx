@@ -210,19 +210,15 @@ async function doRegister() {
       }, 1000);
     } else {
       const message = res.msg || "注册失败";
-      if (captchaEnabled.value && message.includes("验证码")) {
-        registerForm.value.code = "";
-        await getCode();
-      }
+      registerForm.value.code = "";
+      if (captchaEnabled.value) await getCode();
       modal.msgError(message);
     }
   } catch (error) {
     modal.closeLoading();
     const message = error && typeof error === "object" ? error.msg || "注册失败，请稍后重试" : "注册失败，请稍后重试";
-    if (captchaEnabled.value && message.includes("验证码")) {
-      registerForm.value.code = "";
-      await getCode();
-    }
+    registerForm.value.code = "";
+    if (captchaEnabled.value) await getCode();
     modal.msgError(message);
   }
 }
