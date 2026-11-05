@@ -155,10 +155,6 @@ function getTenant() {
       text: displayTenantName(item.companyName),
       deptId: item.deptId,
     }));
-    if (tenantList.value.length && !registerForm.value.tenantId) {
-      registerForm.value.tenantId = tenantList.value[0].value;
-      registerForm.value.deptId = tenantList.value[0].deptId;
-    }
   });
 }
 
