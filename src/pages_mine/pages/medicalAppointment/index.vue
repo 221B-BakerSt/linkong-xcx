@@ -1,10 +1,17 @@
 <template>
   <view class="page">
     <view class="hero card"><view class="hero-title">诊疗预约</view></view>
-    <view v-if="notices.length" class="notice-strip card" @click="showClosureNotice(notices[0])">
-      <text class="notice-badge">停用公告</text>
-      <view class="notice-window"><view class="notice-track"><view v-for="copy in 2" :key="copy" class="notice-copy"><text v-for="notice in notices" :key="copy + '-' + notice.closureId" @click.stop="showClosureNotice(notice)">{{ notice.noticeTitle }} · {{ notice.roomName }}　　</text></view></view></view>
-      <text class="notice-detail" @click.stop="showClosureNotice(notices[0])">详情 ›</text>
+    <view v-if="notices.length" class="notice-strip card">
+      <text class="notice-badge">停诊公告</text>
+      <swiper class="notice-swiper" vertical circular autoplay :interval="3500" :duration="450" @change="onNoticeChange">
+        <swiper-item v-for="notice in notices" :key="notice.closureId" @click="openClosureNotice(notice)">
+          <view class="notice-item">
+            <text class="notice-title">{{ notice.noticeTitle }}</text>
+            <text class="notice-summary">{{ notice.roomName }} · {{ closureTimingLabel(notice) }}</text>
+          </view>
+        </swiper-item>
+      </swiper>
+      <text class="notice-detail" @click="openCurrentClosureNotice">详情 ›</text>
     </view>
     <view class="card date-card">
       <picker mode="date" :value="bookingDate" :start="today()" :end="maxDate()" @change="chooseDate">
@@ -37,6 +44,9 @@
         <view class="room-location">{{ selectedRoom.location || '位置待确认' }}</view>
       </view>
       <view class="doctor-line">主治医师：{{ selectedRoom.attendingDoctor || '待配置' }} · {{ bookingDate }}</view>
+      <view v-for="notice in selectedRoomClosures" :key="notice.closureId" class="room-closure-warning">
+        {{ notice.roomName }}于{{ closureTimingLabel(notice, bookingDate) }}暂停接诊；原因：{{ notice.noticeContent }}。请谅解。
+      </view>
       <view v-if="selectedRoom.loading" class="loading-text">正在加载可预约时段...</view>
       <view v-else class="slot-grid">
         <view v-for="slot in selectedRoom.slots" :key="slot.timeSlot" :class="['slot', selectedSlot === slot.timeSlot && !isSlotExpired(slot) && slot.available && 'selected', (isSlotExpired(slot) || !slot.available) && 'disabled']" @click="selectSlot(selectedRoom, slot)">
@@ -64,20 +74,44 @@ const rooms = ref([]); const bookingDate = ref(""); const roomId = ref(""); cons
 const currentTime = ref(Date.now());
 const canManage = ref(false);
 const notices = ref([]);
+const noticeIndex = ref(0);
 let clockTimer;
 const selectedRoom = computed(() => rooms.value.find((room) => String(room.medicalRoomId) === String(roomId.value)));
+const selectedRoomClosures = computed(() => selectedRoom.value
+  ? notices.value.filter((notice) => String(notice.medicalRoomId) === String(selectedRoom.value.medicalRoomId) && isClosureEffective(notice, bookingDate.value))
+  : []);
 const selectedSlotExpired = computed(() => {
   const slot = selectedRoom.value?.slots?.find((item) => item.timeSlot === selectedSlot.value);
   return !slot || isSlotExpired(slot);
 });
 function today() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
 async function loadClosures() { try { const res = await medicalAppointmentApi.getClosures(); notices.value = res.data || res || []; } catch (e) { notices.value = []; } }
-function showClosureNotice(notice) {
-  const days = notice.closureType === 'WEEKLY' ? '每周' + (notice.weekdays || []).map((day) => ['一', '二', '三', '四', '五', '六', '日'][day - 1] + '、').join('').replace(/、$/, '') :
-    notice.closureType === 'MONTHLY' ? '每月' + (notice.monthDays || []).join('日、') + '日' :
-    notice.closureType === 'DATES' ? (notice.closureDates || []).join('、') : '立即停用';
-  const range = notice.startDate ? '\n生效日期：' + notice.startDate + (notice.endDate ? ' 至 ' + notice.endDate : ' 起') : '';
-  uni.showModal({ title: notice.noticeTitle || '诊疗室停用公告', content: (notice.roomName || '') + (notice.location ? '（' + notice.location + '）' : '') + '\n停用日期：' + days + range + '\n' + (notice.noticeContent || ''), showCancel: false, confirmText: '知道了' });
+function onNoticeChange(event) { noticeIndex.value = Number(event.detail.current || 0); }
+function openClosureNotice(notice) {
+  if (!notice?.closureId) return;
+  uni.navigateTo({ url: '/pages_mine/pages/medicalAppointment/closureNotice?closureId=' + notice.closureId });
+}
+function openCurrentClosureNotice() { openClosureNotice(notices.value[noticeIndex.value] || notices.value[0]); }
+function closureTimingLabel(notice, selectedDate) {
+  if (selectedDate) return selectedDate;
+  if (notice.closureType === 'WEEKLY') {
+    const labels = ['一', '二', '三', '四', '五', '六', '日'];
+    return '每周' + (notice.weekdays || []).map((day) => labels[Number(day) - 1]).filter(Boolean).join('、');
+  }
+  if (notice.closureType === 'MONTHLY') return '每月' + (notice.monthDays || []).join('日、') + '日';
+  if (notice.closureType === 'DATES') return (notice.closureDates || []).join('、');
+  return notice.startDate || '立即';
+}
+function isClosureEffective(notice, date) {
+  if (!date || (notice.startDate && date < notice.startDate) || (notice.endDate && date > notice.endDate)) return false;
+  if (notice.closureType === 'WEEKLY') {
+    const day = new Date(date + 'T00:00:00').getDay();
+    const isoDay = day === 0 ? 7 : day;
+    return (notice.weekdays || []).map(Number).includes(isoDay);
+  }
+  if (notice.closureType === 'MONTHLY') return (notice.monthDays || []).map(Number).includes(Number(date.slice(8, 10)));
+  if (notice.closureType === 'DATES') return (notice.closureDates || []).includes(date);
+  return notice.closureType === 'IMMEDIATE';
 }
 function maxDate() { const d = new Date(); d.setDate(d.getDate() + 7); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 async function loadRooms() { try { const res = await medicalAppointmentApi.getRooms(); rooms.value = (res.data || res || []).map((room) => ({ ...room, slots: [], loading: false })); await loadSchedules(); } catch (e) { uni.showToast({ title: e?.msg || "诊疗室加载失败", icon: "none" }); } }
@@ -150,13 +184,13 @@ onUnload(stopClock);
 .page { min-height: 100vh; padding: 24rpx; background: #f5f7f8; box-sizing: border-box; }
 .card { background: #fff; border-radius: 18rpx; margin-bottom: 20rpx; box-shadow: 0 8rpx 24rpx rgba(42, 64, 78, .05); }
 .hero { padding: 34rpx 30rpx; color: #fff; background: linear-gradient(135deg, #278d82, #40b39b); }.hero-title { font-size: 40rpx; font-weight: 600; }
-.notice-strip { display: flex; align-items: center; gap: 14rpx; padding: 20rpx 24rpx; overflow: hidden; color: #a62c2c; background: #fff5f5; }
+.notice-strip { display: flex; align-items: center; gap: 14rpx; padding: 16rpx 20rpx; overflow: hidden; color: #a62c2c; background: #fff5f5; }
 .notice-badge { flex-shrink: 0; padding: 5rpx 10rpx; color: #fff; background: #e34b4b; border-radius: 6rpx; font-size: 21rpx; }
-.notice-window { flex: 1; overflow: hidden; white-space: nowrap; }
-.notice-track { display: inline-flex; width: max-content; animation: notice-scroll 16s linear infinite; font-size: 24rpx; }
-.notice-copy { display: inline-flex; flex-shrink: 0; }
+.notice-swiper { flex: 1; min-width: 0; height: 72rpx; }
+.notice-item { display: flex; height: 72rpx; flex-direction: column; justify-content: center; overflow: hidden; }
+.notice-title { overflow: hidden; color: #a62c2c; font-size: 23rpx; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.notice-summary { overflow: hidden; color: #bd5751; font-size: 20rpx; text-overflow: ellipsis; white-space: nowrap; }
 .notice-detail { flex-shrink: 0; color: #c53a3a; font-size: 22rpx; }
-@keyframes notice-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .date-card { padding: 30rpx; }
 .date-field { display: flex; align-items: center; min-height: 54rpx; font-size: 30rpx; }
 .date-label { color: #526a72; }
@@ -178,6 +212,7 @@ onUnload(stopClock);
 .room-action { padding-top: 18rpx; color: #188c7b; border-top: 1rpx solid #e7eeee; font-size: 24rpx; }
 .room-action text { float: right; font-size: 32rpx; }
 .room-detail { padding: 30rpx; }
+.room-closure-warning { margin-top: 16rpx; padding: 18rpx 20rpx; color: #a62c2c; background: #fff1f0; border: 1rpx solid #ffd6d2; border-radius: 10rpx; font-size: 23rpx; line-height: 1.6; }
 .detail-back { margin-bottom: 22rpx; color: #188c7b; font-size: 25rpx; }
 .loading-text { padding: 34rpx 0 10rpx; color: #9ba6a8; text-align: center; font-size: 24rpx; }
 .slot-grid { margin-top: 20rpx; }

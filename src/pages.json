@@ -735,6 +735,12 @@
             "enablePullDownRefresh": true
           }
         },
+        {
+          "path": "medicalAppointment/closureNotice",
+          "style": {
+            "navigationBarTitleText": "停诊公告详情"
+          }
+        },
           {
             "path": "medicalAppointment/detail",
             "style": {
